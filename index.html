@@ -1,0 +1,1028 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kit Cabaran Simulator AI</title>
+<meta name="color-scheme" content="only light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@600;700;800&family=Dancing+Script:wght@700&display=swap">
+<style>
+/* Layout: left step rail (Mula → Langkah 1–5 → Hantar → Pelancaran), one reading column; the demo simulator breaks out to full width. */
+:root{
+  --bg:#F4F7FC; --surface:#FFFFFF; --sunk:#E6EEFB; --ink:#1E2463; --text:#2E3557; --muted:#5A6385; --line:#CCD6EC;
+  --accent:#2F5BD8; --accent-soft:#E2E9FB; --navy:#1E2463; --navy-ink:#F4F7FC; --navy-soft:#C9D6F5;
+  --hi:#FFD21F; --hi-ink:#1E2463; --hi-soft:#FFF4C2;
+  --ok:#178A4E; --ok-soft:#DDF3E6; --warn:#A86200; --warn-soft:#FBEBD3; --bad:#B8322A; --bad-soft:#F8E0DD;
+  --code-bg:#F7F9FD; --code-hl:#FFF4C2;
+  --f-display:"Poppins","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Nunito Sans","Segoe UI",Roboto,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --scale:1; --r:12px;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{font-size:calc(16px * var(--scale))}
+body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:1rem;line-height:1.6}
+h1,h2,h3,h4{font-family:var(--f-display);color:var(--ink);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:700}
+h3{font-size:1.15rem;font-weight:700}
+p{margin:0}
+a{color:var(--accent)}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--sunk);padding:.1em .35em;border-radius:4px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.small{font-size:.88rem} .muted{color:var(--muted)}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.en{display:block;font-family:var(--f-body);font-weight:400;font-style:italic;font-size:.55em;color:var(--muted);margin-top:.4em}
+
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar-in{display:flex;align-items:center;gap:12px;padding:10px 16px;max-width:1240px;margin:0 auto}
+.brand{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.brand b{font-family:var(--f-display);color:var(--ink)}
+.brand span{font-size:.75rem;color:var(--muted)}
+.top-tools{margin-left:auto;display:flex;gap:6px}
+.chipbtn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.85rem}
+.shell{max-width:1240px;margin:0 auto;padding-inline:16px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px}
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);align-self:start;padding-block:28px}
+.rail ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.rail a{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:center;padding:7px 8px;border-radius:8px;text-decoration:none;color:var(--text);font-size:.9rem;line-height:1.25}
+.rail a:hover,.rail a.on{background:var(--surface)}
+.rail .n{font-family:var(--f-mono);font-size:.72rem;border:1px solid var(--line);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;color:var(--muted)}
+.rail a.on .n{background:var(--navy);border-color:var(--navy);color:var(--hi)}
+main{padding-block:24px 80px;min-width:0}
+.col{max-width:800px}
+section.step{padding-block:52px 20px;border-top:1px solid var(--line);scroll-margin-top:70px}
+section.step:first-of-type{border-top:0;padding-top:16px}
+.head{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.stack > p{max-width:70ch}
+
+.hl-pill{display:inline-block;align-self:flex-start;background:var(--hi);color:var(--hi-ink);font-weight:700;padding:6px 14px;border-radius:999px;font-size:.85rem}
+.hi-word{color:var(--accent);background:linear-gradient(transparent 62%,var(--hi) 62%)}
+.tagline{font-family:var(--f-display);font-weight:700;font-size:1.25rem;color:var(--accent)}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.facts div{background:var(--surface);padding:12px 14px}
+.facts b{display:block;font-family:var(--f-display);color:var(--ink)}
+.facts span{font-size:.8rem;color:var(--muted)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--navy);background:var(--navy);color:var(--navy-ink);padding:9px 16px;border-radius:9px;font-weight:700;text-decoration:none;cursor:pointer;font-size:.95rem}
+.btn.ghost{background:transparent;color:var(--accent);border-color:var(--accent)}
+.btn.hi{background:var(--hi);border-color:var(--hi);color:var(--hi-ink)}
+.btn.sm{padding:5px 11px;font-size:.84rem}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card .k{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.card b{font-family:var(--f-display);color:var(--ink)}
+.card.dark{background:var(--navy);border-color:var(--navy);color:var(--navy-soft)}
+.card.dark b{color:var(--navy-ink)} .card.dark .k{color:var(--hi)} .card.dark a{color:var(--hi)}
+.card.yel{background:var(--hi);border-color:var(--hi);color:var(--hi-ink)}
+.card.yel b,.card.yel .k{color:var(--hi-ink)}
+.flow3{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:stretch}
+.flow3 .arrow{align-self:center;font-size:1.6rem;font-weight:800;color:var(--accent)}
+.note{border-radius:var(--r);padding:12px 16px;background:var(--accent-soft);font-size:.95rem}
+.note.warn{background:var(--warn-soft)}
+.note b.k{display:block;font-family:var(--f-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.note.warn b.k{color:var(--warn)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--sunk);font-weight:600}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.hl{background:var(--hi-soft)}
+ul.clean,ol.clean{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:5px}
+.steps{counter-reset:s;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:32px minmax(0,1fr);gap:10px;align-items:start}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-weight:600;width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:.85rem}
+details.more{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:12px 16px}
+details.more > summary{cursor:pointer;font-weight:700;color:var(--accent)}
+details.more[open] > summary{margin-bottom:10px}
+
+.mark{display:flex;gap:12px;align-items:flex-start;border-radius:var(--r);padding:12px 16px;border:2px dashed var(--accent);background:var(--surface)}
+.mark .tag{flex:none;font-family:var(--f-mono);font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--accent);color:var(--navy-ink)}
+.mark.try{border-color:var(--hi);background:var(--hi-soft)}
+.mark.try .tag{background:var(--hi);color:var(--hi-ink)}
+.mark.demo .tag{background:var(--navy);color:var(--hi)}
+
+pre{margin:0;font-family:var(--f-mono);font-size:.82rem;line-height:1.55;background:var(--code-bg);border:1px solid var(--line);border-radius:var(--r);padding:14px;overflow:auto;white-space:pre-wrap;word-break:break-word;color:var(--text)}
+.copy{position:relative}
+.copy pre{padding-top:44px}
+.copy .btn{position:absolute;top:8px;right:8px}
+.copy .lbl{position:absolute;top:12px;left:14px;font-family:var(--f-mono);font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.85rem;font-weight:600;min-width:0}
+label.f input,label.f select{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px;font-size:.92rem;width:100%;font-weight:400}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:.95rem}
+.check input{margin-top:.35em;accent-color:var(--accent)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:8px 12px;cursor:pointer;font-size:.88rem;border-bottom:2px solid transparent;margin-bottom:-1px;color:var(--muted)}
+.tabs button.on{border-color:var(--accent);color:var(--ink);font-weight:700}
+.toggle{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.toggle button{border:0;background:var(--bg);padding:6px 12px;font-size:.85rem;cursor:pointer}
+.toggle button.on{background:var(--navy);color:var(--hi);font-weight:700}
+
+.hero{display:flex;flex-direction:column;gap:16px;padding-bottom:24px}
+
+.paper{display:flex;flex-direction:column;gap:10px}
+.paper h3{font-size:1.02rem}
+.paper .meta{font-size:.82rem;color:var(--muted)}
+.paper dl{margin:0;display:grid;grid-template-columns:100px minmax(0,1fr);gap:6px 12px;font-size:.88rem}
+.paper dt{font-weight:700;color:var(--ink)}
+.paper dd{margin:0}
+.paper .idea{background:var(--hi-soft);border-radius:8px;padding:8px 10px;font-size:.88rem}
+
+.ladder{display:flex;flex-direction:column;gap:18px}
+.rung{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;align-items:start}
+.rung .no{background:var(--navy);color:var(--hi);border-radius:14px;height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:800;font-size:1.5rem;line-height:1}
+.rung .no span{font-family:var(--f-mono);font-size:.62rem;font-weight:600;letter-spacing:.08em;color:var(--navy-soft)}
+.rung .body{display:flex;flex-direction:column;gap:8px;min-width:0}
+.rung .body h3{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{font-family:var(--f-mono);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);letter-spacing:.04em}
+.chip.neuro{background:var(--ok-soft);color:var(--ok)}
+.chip.dda{background:var(--warn-soft);color:var(--warn)}
+
+.inst{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.inst-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;background:var(--sunk);border-bottom:1px solid var(--line)}
+.inst-head b{font-family:var(--f-display);color:var(--ink)}
+.inst-body{padding:16px;display:flex;flex-direction:column;gap:14px}
+.ctl{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.sim{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px}
+.codebox{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:10px 0;font-family:var(--f-mono);font-size:.82rem;overflow-x:auto;transition:filter .3s}
+.codebox div{display:grid;grid-template-columns:34px auto;white-space:pre;padding:1px 12px 1px 0;transition:background .2s}
+.codebox i{font-style:normal;color:var(--muted);text-align:right;padding-right:10px;user-select:none}
+.codebox div.on{background:var(--code-hl);box-shadow:inset 4px 0 0 var(--hi)}
+.kw{color:var(--accent);font-weight:600}
+.right{display:flex;flex-direction:column;gap:10px;min-width:0}
+.right .lbl{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stackv{display:flex;flex-direction:column-reverse;gap:8px;min-height:120px}
+.frame{border:2px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.frame.top{border-color:var(--accent)}
+.frame h4{font-family:var(--f-mono);font-size:.8rem;padding:5px 10px;background:var(--sunk);color:var(--ink);display:flex;justify-content:space-between;gap:8px}
+.frame.top h4{background:var(--accent);color:var(--navy-ink)}
+.frame table{font-size:.85rem}
+.frame td{padding:4px 10px;font-family:var(--f-mono)}
+.frame td.v{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.frame tr.chg td{background:var(--hi-soft)}
+.frame .copytag{font-size:.68rem;color:var(--ok);font-weight:700;margin-left:6px}
+.console{background:#10142E;color:#C8F7D4;font-family:var(--f-mono);font-size:.85rem;border-radius:10px;padding:10px 12px;min-height:58px;white-space:pre-wrap}
+.storyrow{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:center}
+.storyrow svg{width:72px;height:86px;display:block}
+.bubble{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 14px;min-height:60px}
+.bubble b.who{font-family:var(--f-display);font-size:.82rem;color:var(--accent);display:block}
+.predict{border:2px solid var(--hi);background:var(--hi-soft);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.predict .opts{display:flex;flex-wrap:wrap;gap:8px}
+.predict button.o{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;cursor:pointer;font-family:var(--f-mono);font-size:.85rem}
+.predict button.o.right{border-color:var(--ok);background:var(--ok-soft)}
+.predict button.o.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.dda{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:.82rem;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+.pill{font-family:var(--f-mono);font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--sunk);color:var(--ink)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.banner{border-radius:10px;padding:10px 14px;background:var(--accent-soft);display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.92rem}
+
+.tl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.tl div{background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--accent);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tl b{font-family:var(--f-display);color:var(--ink)}
+.tl span{font-weight:700;color:var(--accent);font-size:.9rem}
+.tl div.hi{background:var(--navy);border-color:var(--navy);border-top-color:var(--hi)}
+.tl div.hi b{color:var(--hi)} .tl div.hi span{color:var(--navy-ink)}
+.weeks{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.wk{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:.84rem;display:flex;flex-direction:column;gap:4px;min-width:0}
+.wk b{font-family:var(--f-mono);font-size:.72rem;color:var(--accent);letter-spacing:.06em}
+.wk i{font-style:normal;color:var(--muted);font-size:.78rem}
+.prizes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.prizes div{background:var(--navy);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column}
+.prizes span{font-size:.82rem;font-weight:700;color:var(--navy-soft)}
+.prizes b{font-family:var(--f-display);font-size:1.9rem;font-weight:800;color:var(--navy-ink)}
+.prizes div.hi{background:var(--hi)} .prizes div.hi span,.prizes div.hi b{color:var(--hi-ink)}
+
+.script{font-family:"Dancing Script","Brush Script MT",cursive;font-size:2.4rem;font-weight:700;color:var(--accent);line-height:1.1}
+.launch-stage{position:relative;height:250px;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#1E2463,#2F5BD8);display:grid;place-items:center;text-align:center;padding:16px}
+.launch-stage canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.launch-msg{position:relative;display:flex;flex-direction:column;gap:8px;color:#F4F7FC}
+.launch-msg b{font-family:var(--f-display);font-size:1.5rem;line-height:1.15;color:#F4F7FC}
+.launch-msg span{color:#C9D6F5}
+.launch-msg .count{font-family:var(--f-display);font-size:6rem;font-weight:800;color:#FFD21F;line-height:1}
+.launch-msg .open{font-family:var(--f-display);font-size:2.3rem;font-weight:800;color:#FFD21F;line-height:1.1}
+footer{border-top:1px solid var(--line);padding-block:22px;font-size:.82rem;color:var(--muted)}
+
+@media (max-width:980px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:0}
+  .rail{position:static;padding-block:10px 0;overflow-x:auto}
+  .rail ol{flex-direction:row}
+  .rail a{white-space:nowrap;grid-template-columns:24px auto}
+  .sim{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .grid2,.grid3,.fields{grid-template-columns:minmax(0,1fr)}
+  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flow3{grid-template-columns:minmax(0,1fr)}
+  .flow3 .arrow{transform:rotate(90deg);justify-self:center}
+  .tl,.prizes{grid-template-columns:minmax(0,1fr)}
+  .weeks{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rung{grid-template-columns:48px minmax(0,1fr)}
+  .rung .no{height:48px;font-size:1.2rem}
+  .paper dl{grid-template-columns:minmax(0,1fr)}
+  .mark{flex-direction:column}
+  .brand span{display:none}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* neuroscience mini animation */
+.neuro-map td:first-child{white-space:nowrap}
+@media (max-width:640px){.neuro-map td:first-child{white-space:normal;min-width:6.5em}}
+.brain{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:16px;display:flex;flex-direction:column;gap:10px}
+.brain-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.brain-head b{font-family:var(--f-display);color:var(--ink)}
+.brain-svg{width:100%;max-width:560px;height:auto;align-self:center}
+.brain-svg .nA circle,.brain-svg .nB circle{fill:var(--accent-soft);stroke:var(--accent);stroke-width:3}
+.brain-svg line{stroke:var(--accent);stroke-width:3;stroke-linecap:round}
+.brain-svg .axon{fill:none;stroke:var(--accent);stroke-width:4;stroke-linecap:round}
+.brain-svg .syn{stroke:var(--hi);stroke-linecap:round;transition:stroke-width .5s ease}
+.brain-svg .pulse{fill:var(--hi);stroke:var(--navy);stroke-width:2}
+.brain-svg .errtag{font:700 13px var(--f-body);fill:var(--warn)}
+.brain-svg .nB.fire circle{fill:var(--hi-soft)}
+.meter{display:flex;align-items:center;gap:10px}
+.meter .bar{flex:1;height:12px;border-radius:999px;background:var(--sunk);overflow:hidden}
+.meter .bar i{display:block;height:100%;width:20%;background:linear-gradient(90deg,var(--accent),var(--ok));transition:width .4s ease}
+.meter b{font-family:var(--f-mono);min-width:3.2em;text-align:right;color:var(--ink)}
+/* Always light, even when the browser or OS is in dark mode */
+:root{color-scheme:only light}
+html,body{background:var(--bg)}
+/* Language toggle */
+html:not(.L-en) [data-t="en"]{display:none!important}
+html.L-en [data-t="ms"]{display:none!important}
+.langsw{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.langsw button{border:0;background:transparent;padding:5px 12px;font:700 .85rem var(--f-body);color:var(--muted);cursor:pointer}
+.langsw button.on{background:var(--navy);color:var(--navy-ink)}
+.langsw button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+</style>
+
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand"><b>SIM ODL · FTSM UKM</b><span data-t="ms">Bahan bengkel · Cabaran Simulator Pembelajaran Interaktif</span><span data-t="en">Workshop kit · Interactive Learning Simulator Challenge</span></div>
+    <div class="top-tools">
+      <div class="langsw" role="group" aria-label="Bahasa / Language"><button id="lgMs" class="on" aria-pressed="true">BM</button><button id="lgEn" aria-pressed="false">BI</button></div>
+      <button class="chipbtn" id="fsDown" aria-label="A−">A−</button>
+      <button class="chipbtn" id="fsUp" aria-label="A+">A+</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="rail" aria-label="Langkah">
+    <ol id="rail">
+      <li><a href="#mula"><span class="n">0</span><span data-t="ms">Niat &amp; tujuan</span><span data-t="en">Intention &amp; aims</span></a></li>
+      <li><a href="#l1"><span class="n">1</span><span data-t="ms">Pilih konsep</span><span data-t="en">Choose a concept</span></a></li>
+      <li><a href="#l2"><span class="n">2</span><span data-t="ms">Cari maklumat</span><span data-t="en">Find information</span></a></li>
+      <li><a href="#l3"><span class="n">3</span><span data-t="ms">Demo &amp; prompt bertangga</span><span data-t="en">Demo &amp; step-by-step prompts</span></a></li>
+      <li><a href="#l4"><span class="n">4</span><span data-t="ms">Semak ketepatan</span><span data-t="en">Check accuracy</span></a></li>
+      <li><a href="#l5"><span class="n">5</span><span data-t="ms">Kongsi ke GitHub</span><span data-t="en">Share on GitHub</span></a></li>
+      <li><a href="#hantar"><span class="n">★</span><span data-t="ms">Syarat &amp; hadiah</span><span data-t="en">Rules &amp; prizes</span></a></li>
+      <li><a href="#lancar"><span class="n">✓</span><span data-t="ms">Pelancaran &amp; daftar</span><span data-t="en">Launch &amp; register</span></a></li>
+    </ol>
+  </nav>
+
+<main>
+<section class="step" id="mula">
+  <div class="hero col">
+    <span class="hl-pill"><span data-t="ms">Bengkel · Bulan Akademia UKM 2026</span><span data-t="en">Workshop · UKM Academia Month 2026</span></span>
+    <h1 data-t="ms">Bengkel Cabaran <span class="hi-word">Simulator</span><span class="en">Pembelajaran Interaktif Berbantukan AI Generatif</span></h1>
+    <h1 data-t="en">Interactive Learning <span class="hi-word">Simulator</span> Challenge<span class="en">Workshop · Assisted by Generative AI</span></h1>
+    <div class="facts">
+      <div><b><span data-t="ms">21 Okt 2026</span><span data-t="en">21 Oct 2026</span></b><span data-t="ms">Rabu</span><span data-t="en">Wednesday</span></div>
+      <div><b><span data-t="ms">2.30–4.30 ptg</span><span data-t="en">2.30–4.30 pm</span></b><span>Zoom</span></div>
+      <div><b><span data-t="ms">10 minggu</span><span data-t="en">10 weeks</span></b><span data-t="ms">1 cabaran</span><span data-t="en">1 challenge</span></div>
+      <div><b>RM300</b><span data-t="ms">hadiah Johan</span><span data-t="en">first prize</span></div>
+    </div>
+    <p class="small muted" data-t="ms">Penceramah: <b>Dr. Nazatul Aini Abd Majid</b> · Anjuran Unit Pengajaran &amp; CITRA, FTSM UKM</p>
+    <p class="small muted" data-t="en">Speaker: <b>Dr. Nazatul Aini Abd Majid</b> · Organised by the Teaching &amp; CITRA Unit, FTSM UKM</p>
+  </div>
+
+  <div class="col stack">
+    <h2 data-t="ms">Niat → Mindset → Tindakan</h2>
+    <h2 data-t="en">Intention → Mindset → Action</h2>
+    <div class="flow3">
+      <div class="card dark"><span class="k"><span data-t="ms">Niat</span><span data-t="en">Intention</span></span><b data-t="ms">Niat yang bersih untuk belajar ilmu baharu</b><b data-t="en">A sincere intention to learn something new</b><span class="small" data-t="ms">Niat yang lahir dari hati.</span><span class="small" data-t="en">An intention that comes from the heart.</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="card"><span class="k">Mindset</span><b data-t="ms">Apa yang saya boleh buat?</b><b data-t="en">What can I do?</b><span class="small muted" data-t="ms">Untuk bantu diri sendiri, dan juga orang lain.</span><span class="small muted" data-t="en">To help myself, and others too.</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="card yel"><span class="k"><span data-t="ms">Tindakan</span><span data-t="en">Action</span></span><b data-t="ms">Bina, kongsi, sertai cabaran</b><b data-t="en">Build, share, join the challenge</b><span class="small" data-t="ms">"Visi tanpa tindakan hanyalah angan-angan."</span><span class="small" data-t="en">"Vision without action is merely a daydream."</span></div>
+    </div>
+    <p data-t="ms">Anggaplah hari ini sebagai <b>titik permulaan</b>. Mari bangunkan simulator, kongsikan dengan rakan-rakan, dan sertai cabaran ini. Jika ada rezeki, anda boleh menang!</p>
+    <p data-t="en">Think of today as a <b>starting point</b>. Let's build a simulator, share it with friends, and join the challenge. With a bit of luck, you could win!</p>
+
+    <h2 style="margin-top:12px" data-t="ms">Tujuan bengkel</h2>
+    <h2 style="margin-top:12px" data-t="en">Workshop aims</h2>
+    <p data-t="ms">Melihat bagaimana kita boleh gunakan AI untuk <b>menukar satu konsep yang sukar kepada bentuk interaktif</b>.</p>
+    <p data-t="en">See how we can use AI to <b>turn a difficult concept into something interactive</b>.</p>
+    <div class="grid2">
+      <div class="card"><span class="k"><span data-t="ms">Fokus 1</span><span data-t="en">Focus 1</span></span><b data-t="ms">Cari kajian lepas</b><b data-t="en">Find past research</b><span class="small muted" data-t="ms">UKM ialah universiti penyelidikan. Kemahiran ini penting, terutamanya untuk Projek Tahun Akhir (FYP). Langkah 1–2.</span><span class="small muted" data-t="en">UKM is a research university. This skill matters, especially for your final year project. Steps 1–2.</span></div>
+      <div class="card dark"><span class="k"><span data-t="ms">Fokus 2</span><span data-t="en">Focus 2</span></span><b data-t="ms">Bina simulator dengan AI</b><b data-t="en">Build a simulator with AI</b><span class="small" data-t="ms">Demo, prompt bertangga, semak dan kongsi. Langkah 3–5.</span><span class="small" data-t="en">Demo, step-by-step prompts, check and share. Steps 3–5.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="l1">
+  <div class="col">
+    <div class="head"><span class="eyebrow"><span data-t="ms">Langkah 1</span><span data-t="en">Step 1</span></span><h2 data-t="ms">Pilih konsep<span class="en">Contoh hari ini: Pengaturcaraan → Fungsi (pelajar tahun satu)</span></h2><h2 data-t="en">Choose a concept<span class="en">Today's example: Programming → Functions (first-year students)</span></h2></div>
+    <div class="stack">
+      <p data-t="ms">Pilih satu bidang, kemudian satu konsep yang sukar difahami.</p>
+      <p data-t="en">Pick a field, then one concept that students find hard to grasp.</p>
+      <div class="tabs" id="ideaTabs" role="tablist"></div>
+      <div class="tbl"><table>
+        <thead><tr><th><span data-t="ms">Konsep sukar</span><span data-t="en">Difficult concept</span></th><th><span data-t="ms">Idea simulator</span><span data-t="en">Simulator idea</span></th><th>Input</th><th>Output</th></tr></thead>
+        <tbody id="ideaBody"></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="l2">
+  <div class="col">
+    <div class="head"><span class="eyebrow"><span data-t="ms">Langkah 2</span><span data-t="en">Step 2</span></span><h2 data-t="ms">Cari maklumat<span class="en">Scopus AI → Libquest → NotebookLM</span></h2><h2 data-t="en">Find information<span class="en">Scopus AI → Libquest → NotebookLM</span></h2></div>
+    <div class="stack">
+      <div class="grid3">
+        <div class="card dark"><span class="k"><span data-t="ms">1 · Cari</span><span data-t="en">1 · Search</span></span><b>Scopus AI</b><span class="small" data-t="ms">Dilanggan oleh Perpustakaan UKM. Log masuk melalui <i>e-resources</i> menggunakan ID SMP, kemudian pilih Scopus AI.</span><span class="small" data-t="en">Subscribed by the UKM Library. Log in through <i>e-resources</i> with your SMP ID, then choose Scopus AI.</span><a class="small" href="https://eresourcesptsl.ukm.remotexs.co/user/login" target="_blank" rel="noopener" style="color:var(--hi)">eresourcesptsl.ukm.remotexs.co</a></div>
+        <div class="card"><span class="k"><span data-t="ms">2 · Dapatkan</span><span data-t="en">2 · Obtain</span></span><b>Libquest</b><span class="small muted" data-t="ms">Artikel berbayar dan tidak dapat dimuat turun? Mohon artikel itu secara percuma melalui Libquest, Perpustakaan UKM, menggunakan kuota universiti.</span><span class="small muted" data-t="en">A paywalled article you can't download? Request it free of charge through Libquest, UKM Library, using the university quota.</span><a class="small" href="https://libquest.ukm.my/index.php" target="_blank" rel="noopener">libquest.ukm.my</a></div>
+        <div class="card yel"><span class="k"><span data-t="ms">3 · Ekstrak</span><span data-t="en">3 · Extract</span></span><b>NotebookLM</b><span class="small" data-t="ms">Muat naik artikel, kemudian minta AI menyenaraikan elemen interaktif yang digunakan.</span><span class="small" data-t="en">Upload the paper and ask the AI to list the interactive elements it uses.</span><a class="small" href="https://notebooklm.google.com" target="_blank" rel="noopener" style="color:var(--hi-ink)">notebooklm.google.com</a></div>
+      </div>
+
+      <div class="mark try"><span class="tag"><span data-t="ms">Cuba</span><span data-t="en">Try</span></span><div class="stack" style="gap:8px;flex:1;min-width:0"><span data-t="ms">Salin soalan carian ini, tampal di <b>Scopus AI</b>. Tukar topik kepada topik anda.</span><span data-t="en">Copy this search question and paste it into <b>Scopus AI</b>. Swap in your own topic.</span>
+        <div class="copy"><span class="lbl"><span data-t="ms">Soalan carian</span><span data-t="en">Search question</span></span><pre id="qSearch">How do interactive web-based simulators improve the comprehension of difficult programming concepts, such as functions and parameter passing, for first-year university students?</pre><button class="btn sm" data-copy="qSearch">Salin</button></div></div></div>
+
+      <div class="mark try"><span class="tag"><span data-t="ms">Cuba</span><span data-t="en">Try</span></span><div class="stack" style="gap:8px;flex:1;min-width:0"><span data-t="ms">Muat naik artikel ke <b>NotebookLM</b>, kemudian salin prompt ini.</span><span data-t="en">Upload the paper to <b>NotebookLM</b>, then copy this prompt.</span>
+        <div class="copy"><span class="lbl"><span data-t="ms">Prompt ekstrak (NotebookLM)</span><span data-t="en">Extraction prompt (NotebookLM)</span></span><pre id="pExtract"></pre><button class="btn sm" data-copy="pExtract">Salin</button></div></div></div>
+
+      <p class="small muted" data-t="ms">Contohnya, ada kajian yang menggunakan elemen cerita (avatar) dan maklum balas pantas.</p>
+      <p class="small muted" data-t="en">For example, some studies use story elements (an avatar) and instant feedback.</p>
+      <div class="note warn"><b class="k"><span data-t="ms">Ingat</span><span data-t="en">Remember</span></b><span data-t="ms">Jangan percaya AI bulat-bulat. Anda wajib membaca artikel itu sendiri.</span><span data-t="en">Don't trust the AI blindly. You must still read the paper yourself.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="l3">
+  <div class="col">
+    <div class="head"><span class="eyebrow"><span data-t="ms">Langkah 3</span><span data-t="en">Step 3</span></span><h2 data-t="ms">Demo &amp; prompt bertangga<span class="en">Topik: Fungsi · Metafora: Kafe Siswa</span></h2><h2 data-t="en">Demo &amp; step-by-step prompts<span class="en">Topic: Functions · Metaphor: the Student Café</span></h2></div>
+    <div class="stack">
+      <p data-t="ms">Lihat hasil akhirnya dahulu. Masukkan input dan perhatikan <b>Call Stack</b> di sebelah kanan: nilai dari <code>main</code> disalin, dihantar ke fungsi, dan dipulangkan.</p>
+      <p data-t="en">See the end result first. Enter an input and watch the <b>Call Stack</b> on the right: values from <code>main</code> are copied, passed to the function, and returned.</p>
+    </div>
+  </div>
+
+  <div class="inst" style="margin-top:16px" id="demo">
+    <div class="inst-head">
+      <b data-t="ms">Demo Simulator: Kafe Siswa</b><b data-t="en">Demo Simulator: Student Café</b>
+      <div class="toggle" id="lvl" role="group" aria-label="Tahap"><button data-l="1" class="on"><span data-t="ms">Asas</span><span data-t="en">Basic</span></button><button data-l="2"><span data-t="ms">Sederhana</span><span data-t="en">Intermediate</span></button><button data-l="3"><span data-t="ms">Mencabar</span><span data-t="en">Challenging</span></button></div>
+    </div>
+    <div class="inst-body">
+      <div class="ctl">
+        <label class="f" for="inCup"><span><span data-t="ms">Bilangan cawan</span><span data-t="en">Number of cups</span></span><select id="inCup"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+        <label class="f" for="inDisc" id="discWrap"><span><span data-t="ms">Diskaun (%)</span><span data-t="en">Discount (%)</span></span><select id="inDisc"><option>0</option><option selected>10</option><option>20</option></select></label>
+        <button class="btn sm ghost" id="sRand"><span data-t="ms">Cuba nilai lain</span><span data-t="en">Try other values</span></button>
+      </div>
+      <div class="sim">
+        <div class="codebox" id="code" aria-label="C"></div>
+        <div class="right">
+          <span class="lbl"><span data-t="ms">Call stack (timbunan panggilan)</span><span data-t="en">Call stack</span></span>
+          <div class="stackv" id="stackv"></div>
+          <span class="lbl"><span data-t="ms">Konsol</span><span data-t="en">Console</span></span>
+          <div class="console" id="console"></div>
+        </div>
+      </div>
+      <div class="storyrow"><div id="ava"></div><div class="bubble" aria-live="polite"><b class="who"><span data-t="ms">Kak Mira, juruwang Kafe Siswa</span><span data-t="en">Kak Mira, cashier at the Student Café</span></b><span id="say"></span></div></div>
+      <div class="predict" id="pred" hidden></div>
+      <div class="banner" id="ddaBanner" hidden></div>
+      <div class="btnrow">
+        <button class="btn sm ghost" id="sBack"><span data-t="ms">Undur</span><span data-t="en">Back</span></button>
+        <button class="btn" id="sNext"></button>
+        <button class="btn sm ghost" id="sReset"><span data-t="ms">Set semula</span><span data-t="en">Reset</span></button>
+      </div>
+      <div class="dda" id="ddaStat"></div>
+    </div>
+  </div>
+
+  <div class="col stack" style="margin-top:28px">
+    <h3 data-t="ms">Metafora Kafe</h3><h3 data-t="en">The café metaphor</h3>
+    <div class="flow3">
+      <div class="card dark"><span class="k">main</span><b data-t="ms">Juruwang</b><b data-t="en">Cashier</b><span class="small" data-t="ms">Menerima pesanan</span><span class="small" data-t="en">Takes the order</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="card"><span class="k">Parameter</span><b data-t="ms">Salinan resit</b><b data-t="en">A copy of the receipt</b><span class="small muted" data-t="ms">dihantar kepada barista</span><span class="small muted" data-t="en">passed to the barista</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="card yel"><span class="k"><span data-t="ms">Fungsi → return value</span><span data-t="en">Function → return value</span></span><b data-t="ms">Barista pulangkan kopi</b><b data-t="en">The barista returns the coffee</b><span class="small" data-t="ms">kepada juruwang</span><span class="small" data-t="en">to the cashier</span></div>
+    </div>
+
+    <h3 id="neuro" data-t="ms">Neurosains ringkas dalam demo kita</h3><h3 data-t="en">A little neuroscience in our demo</h3>
+    <p data-t="ms">Setiap prompt bertangga sebenarnya menggunakan satu prinsip daripada sains otak tentang cara kita belajar.</p>
+    <p data-t="en">Each step-by-step prompt actually uses one principle from brain science about how we learn.</p>
+    <div class="tbl"><table class="neuro-map">
+      <thead><tr><th>Prompt</th><th><span data-t="ms">Prinsip otak</span><span data-t="en">Brain principle</span></th><th><span data-t="ms">Maksud ringkas</span><span data-t="en">In simple words</span></th></tr></thead>
+      <tbody>
+        <tr><td><b>1</b> <span data-t="ms">Asas</span><span data-t="en">Foundation</span></td><td><span data-t="ms">Beban kognitif</span><span data-t="en">Cognitive load</span></td><td><span data-t="ms">Ingatan kerja kita terhad. Langkah kecil, dengan gambar (call stack) di sebelah teks, lebih mudah diproses.</span><span data-t="en">Working memory is limited. Small steps, with a picture (the call stack) beside the text, are easier to process.</span></td></tr>
+        <tr><td><b>2</b> <span data-t="ms">Ramal dahulu</span><span data-t="en">Predict first</span></td><td><span data-t="ms">Ralat ramalan</span><span data-t="en">Prediction error</span></td><td><span data-t="ms">Apabila jangkaan kita meleset, otak memberi isyarat "ralat" lalu mengemas kini pemahaman. Kesilapan membantu kita belajar.</span><span data-t="en">When our expectation is wrong, the brain signals an "error" and updates its understanding. Mistakes help us learn.</span></td></tr>
+        <tr><td><b>3</b> <span data-t="ms">Avatar &amp; cerita</span><span data-t="en">Avatar &amp; story</span></td><td><span data-t="ms">Cerita &amp; emosi</span><span data-t="en">Story &amp; emotion</span></td><td><span data-t="ms">Maklumat yang dikaitkan dengan cerita dan situasi harian lebih mudah diingat.</span><span data-t="en">Information linked to a story and everyday situations is easier to remember.</span></td></tr>
+        <tr><td><b>4</b> <span data-t="ms">Ulangan</span><span data-t="en">Repetition</span></td><td><span data-t="ms">Amalan mengingat semula</span><span data-t="en">Retrieval practice</span></td><td><span data-t="ms">Mengingat semula tanpa melihat nota menguatkan sambungan antara neuron, lebih daripada membaca semula.</span><span data-t="en">Recalling without looking at notes strengthens connections between neurons more than rereading.</span></td></tr>
+        <tr><td><b>5</b> <span data-t="ms">Tahap &amp; DDA</span><span data-t="en">Levels &amp; DDA</span></td><td><span data-t="ms">Cabaran yang sesuai</span><span data-t="en">The right challenge</span></td><td><span data-t="ms">Kita belajar paling baik apabila tugasan tidak terlalu mudah dan tidak terlalu sukar.</span><span data-t="en">We learn best when a task is neither too easy nor too hard.</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="brain" id="brain">
+      <div class="brain-head"><b data-t="ms">Animasi: menguatkan sambungan neuron</b><b data-t="en">Animation: strengthening a neural connection</b><span class="chip neuro"><span data-t="ms">Ilustrasi ringkas</span><span data-t="en">Simple illustration</span></span></div>
+      <svg viewBox="0 0 360 150" class="brain-svg" aria-hidden="true">
+        <g class="nA"><line x1="22" y1="40" x2="52" y2="62"/><line x1="18" y1="100" x2="52" y2="84"/><line x1="40" y1="20" x2="60" y2="58"/><circle cx="70" cy="74" r="22"/></g>
+        <path id="axon" class="axon" d="M92 74 C150 74 180 74 236 74"/>
+        <line id="syn" class="syn" x1="240" y1="74" x2="274" y2="74"/>
+        <g class="nB"><circle cx="296" cy="74" r="22"/><line x1="314" y1="62" x2="344" y2="36"/><line x1="316" y1="84" x2="346" y2="108"/><line x1="300" y1="96" x2="312" y2="132"/></g>
+        <circle id="pulse" class="pulse" r="6" cx="92" cy="74" opacity="0"/>
+        <text id="errTag" class="errtag" x="257" y="40" text-anchor="middle" opacity="0"></text>
+      </svg>
+      <div class="meter"><span class="lbl"><span data-t="ms">Kekuatan ingatan</span><span data-t="en">Memory strength</span></span><div class="bar"><i id="memBar"></i></div><b id="memVal">20%</b></div>
+      <div class="btnrow">
+        <button class="btn sm ghost" data-act="reread"><span data-t="ms">Baca semula sahaja</span><span data-t="en">Just reread</span></button>
+        <button class="btn sm" data-act="predict"><span data-t="ms">Ramal, kemudian maklum balas</span><span data-t="en">Predict, then get feedback</span></button>
+        <button class="btn sm" data-act="recall"><span data-t="ms">Ingat semula tanpa nota</span><span data-t="en">Recall without notes</span></button>
+      </div>
+      <p class="small" id="brainSay" aria-live="polite"></p>
+      <p class="small muted" data-t="ms">Perhatikan: jika dibiarkan, kekuatan ingatan menurun perlahan-lahan (lupa). Strategi aktif menguatkannya lebih banyak. Angka ini ilustrasi, bukan ukuran sebenar.</p>
+      <p class="small muted" data-t="en">Notice: left alone, memory strength slowly fades (forgetting). Active strategies strengthen it more. The numbers are illustrative, not real measurements.</p>
+    </div>
+
+    <h3 data-t="ms">Prompt bertangga</h3><h3 data-t="en">Step-by-step prompts</h3>
+    <p data-t="ms">Kita tidak membina semuanya sekali gus. Kita membina secara <b>berfasa</b> supaya asasnya kukuh dan AI tidak keliru. Salin satu prompt pada satu masa ke <b>Gemini Canvas</b> atau <b>ChatGPT</b>, dalam perbualan yang sama.</p>
+    <p data-t="en">We don't do everything at once. We build <b>in phases</b> so the foundation is solid and the AI doesn't get confused. Copy one prompt at a time into <b>Gemini Canvas</b> or <b>ChatGPT</b>, in the same conversation.</p>
+    <details class="more">
+      <summary><span data-t="ms">Tukar topik anda (pilihan)</span><span data-t="en">Change to your own topic (optional)</span></summary>
+      <div class="fields">
+        <label class="f" for="tTopik"><span><span data-t="ms">Topik</span><span data-t="en">Topic</span></span><input id="tTopik" data-store></label>
+        <label class="f" for="tTak"><span><span data-t="ms">Apa yang "tidak kelihatan"</span><span data-t="en">What is usually "invisible"</span></span><input id="tTak" data-store></label>
+        <label class="f" for="tKonteks"><span><span data-t="ms">Metafora / konteks</span><span data-t="en">Metaphor / context</span></span><input id="tKonteks" data-store></label>
+      </div>
+      <div class="btnrow" style="margin-top:10px"><button class="btn sm ghost" id="tReset"><span data-t="ms">Guna contoh Kafe Siswa semula</span><span data-t="en">Use the Student Café example again</span></button></div>
+    </details>
+    <div class="ladder" id="ladder"></div>
+  </div>
+</section>
+
+<section class="step" id="l4">
+  <div class="col">
+    <div class="head"><span class="eyebrow"><span data-t="ms">Langkah 4</span><span data-t="en">Step 4</span></span><h2 data-t="ms">Semak ketepatan<span class="en">Apabila kod sudah siap, siapakah yang mengauditnya? Ketepatan konsep = 25 markah</span></h2><h2 data-t="en">Check accuracy<span class="en">Once the code is done, who audits it? Concept accuracy = 25 marks</span></h2></div>
+    <div class="stack">
+      <div class="mark try"><span class="tag"><span data-t="ms">Cuba</span><span data-t="en">Try</span></span><div class="stack" style="gap:8px;flex:1;min-width:0"><span data-t="ms">Salin <b>Prompt Semak</b>. AI memakai "topi" Auditor atau Pensyarah Pakar untuk mencari kesilapan.</span><span data-t="en">Copy the <b>Check Prompt</b>. The AI wears the "hat" of an Auditor or Expert Lecturer to find mistakes.</span>
+        <div class="copy"><span class="lbl"><span data-t="ms">Prompt semak</span><span data-t="en">Check prompt</span></span><pre id="pCheck"></pre><button class="btn sm" data-copy="pCheck">Salin</button></div></div></div>
+      <h3 data-t="ms">Lima semakan manual (wajib)</h3><h3 data-t="en">Five manual checks (required)</h3>
+      <div class="card stack" id="checks" style="gap:10px">
+        <label class="check"><input type="checkbox" data-i="0"> <span data-t="ms"><b>Jadual jejak</b> (trace table): ikut kod langkah demi langkah dengan tangan.</span><span data-t="en"><b>Trace table:</b> follow the code step by step by hand.</span></label>
+        <label class="check"><input type="checkbox" data-i="1"> <span data-t="ms"><b>Kes sempadan:</b> uji nilai 0 atau negatif.</span><span data-t="en"><b>Boundary cases:</b> test 0 or negative values.</span></label>
+        <label class="check"><input type="checkbox" data-i="2"> <span data-t="ms"><b>Rujuk nota</b> kuliah atau buku teks.</span><span data-t="en"><b>Check your notes</b> or the textbook.</span></label>
+        <label class="check"><input type="checkbox" data-i="3"> <span data-t="ms"><b>Rakan</b> mencuba dan mengesahkan.</span><span data-t="en"><b>A friend</b> tries it and confirms.</span></label>
+        <label class="check"><input type="checkbox" data-i="4"> <span data-t="ms"><b>Pensyarah</b> kursus mengesahkan konsepnya.</span><span data-t="en"><b>Your lecturer</b> confirms the concept.</span></label>
+      </div>
+      <p data-t="ms"><b>Jangan bergantung 100% pada AI!</b></p><p data-t="en"><b>Don't rely 100% on AI!</b></p>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="l5">
+  <div class="col">
+    <div class="head"><span class="eyebrow"><span data-t="ms">Langkah 5</span><span data-t="en">Step 5</span></span><h2 data-t="ms">Kongsi ke GitHub Pages<span class="en">Apabila sudah disahkan betul, kongsikan dengan dunia</span></h2><h2 data-t="en">Share on GitHub Pages<span class="en">Once it's confirmed correct, share it with the world</span></h2></div>
+    <div class="stack">
+      <p data-t="ms">Fail yang AI hasilkan ialah gabungan <b>HTML</b>, <b>CSS</b> dan <b>JavaScript</b> (yang menjadikannya interaktif). Salin kod itu dan simpan sebagai <code>index.html</code>.</p>
+      <p data-t="en">The file the AI generates combines <b>HTML</b>, <b>CSS</b> and <b>JavaScript</b> (which makes it interactive). Copy the code and save it as <code>index.html</code>.</p>
+      <div class="grid2">
+        <div class="card"><span class="k"><span data-t="ms">Mengapa GitHub?</span><span data-t="en">Why GitHub?</span></span><b data-t="ms">Platform industri</b><b data-t="en">An industry platform</b><span class="small muted" data-t="ms">Digunakan oleh pembangun perisian di seluruh dunia.</span><span class="small muted" data-t="en">Used by software developers all over the world.</span></div>
+        <div class="card"><span class="k"><span data-t="ms">Mengapa GitHub?</span><span data-t="en">Why GitHub?</span></span><b data-t="ms">Ada timestamp</b><b data-t="en">It has a timestamp</b><span class="small muted" data-t="ms">Jika ada yang meniru, kita tahu siapa yang memuat naik dahulu.</span><span class="small muted" data-t="en">If someone copies your work, we know who uploaded first.</span></div>
+      </div>
+      <div class="mark demo"><span class="tag">Demo</span><span data-t="ms">Empat langkah: <b>Upload → Commit → Settings → Pages</b></span><span data-t="en">Four steps: <b>Upload → Commit → Settings → Pages</b></span></div>
+      <ol class="steps">
+        <li><div data-t="ms"><b>Upload.</b> Di github.com, cipta repositori baharu (Public), kemudian <b>Add file → Upload files</b> → <code>index.html</code>.</div><div data-t="en"><b>Upload.</b> On github.com, create a new repository (Public), then <b>Add file → Upload files</b> → <code>index.html</code>.</div></li>
+        <li><div data-t="ms"><b>Commit.</b> Tekan <b>Commit changes</b>.</div><div data-t="en"><b>Commit.</b> Click <b>Commit changes</b>.</div></li>
+        <li><div data-t="ms"><b>Settings.</b> Buka tab <b>Settings</b> repositori.</div><div data-t="en"><b>Settings.</b> Open the repository's <b>Settings</b> tab.</div></li>
+        <li><div data-t="ms"><b>Pages.</b> <b>Pages</b> → Deploy from a branch → <b>main</b>, <b>/ (root)</b> → <b>Save</b>. Selepas 1–2 minit, anda dapat pautan awam: <code>https://nama-pengguna.github.io/nama-repo/</code></div><div data-t="en"><b>Pages.</b> <b>Pages</b> → Deploy from a branch → <b>main</b>, <b>/ (root)</b> → <b>Save</b>. After 1–2 minutes you get a public link: <code>https://username.github.io/repo-name/</code></div></li>
+      </ol>
+      <details class="more">
+        <summary><span data-t="ms">Templat dokumentasi ringkas (README.md)</span><span data-t="en">Short documentation template (README.md)</span></summary>
+        <div class="copy"><span class="lbl">README.md</span><pre id="readme"></pre><button class="btn sm" data-copy="readme">Salin</button></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="hantar">
+  <div class="col">
+    <div class="head"><span class="eyebrow"><span data-t="ms">Syarat &amp; hadiah</span><span data-t="en">Rules &amp; prizes</span></span><h2 data-t="ms">Bilakah tarikh tutupnya?</h2><h2 data-t="en">When is the deadline?</h2></div>
+    <div class="stack">
+      <div class="tl">
+        <div><b><span data-t="ms">21 Okt 2026</span><span data-t="en">21 Oct 2026</span></b><span data-t="ms">Mula membina</span><span data-t="en">Start building</span></div>
+        <div><b><span data-t="ms">18 Dis 2026</span><span data-t="en">18 Dec 2026</span></b><span data-t="ms">Tarikh akhir daftar</span><span data-t="en">Registration closes</span></div>
+        <div><b>3 Jan 2027</b><span data-t="ms">Tamat 10 minggu</span><span data-t="en">End of 10 weeks</span></div>
+        <div class="hi"><b>4 – 17 Jan 2027</b><span data-t="ms">Penghantaran</span><span data-t="en">Submission</span></div>
+        <div><b>18 – 29 Jan 2027</b><span data-t="ms">Penilaian</span><span data-t="en">Judging</span></div>
+      </div>
+      <div class="grid2">
+        <div class="card dark"><span class="k"><span data-t="ms">4 perkara dihantar</span><span data-t="en">4 items to submit</span></span>
+          <ol class="clean small" data-t="ms"><li>Pautan GitHub Pages</li><li>Pautan repositori</li><li>Video demo 2–3 minit</li><li>Dokumentasi ringkas</li></ol>
+          <ol class="clean small" data-t="en"><li>GitHub Pages link</li><li>Repository link</li><li>2–3 minute demo video</li><li>Short documentation</li></ol>
+          <span class="small" data-t="ms">Tiada pembentangan secara langsung.</span><span class="small" data-t="en">No live presentation.</span></div>
+        <div class="card"><span class="k"><span data-t="ms">Bahasa antara muka</span><span data-t="en">Interface language</span></span><b data-t="ms">Bahasa Melayu atau Bahasa Inggeris</b><b data-t="en">Malay or English</b><span class="small muted" data-t="ms">Bebas dipilih mengikut kesesuaian kursus anda.</span><span class="small muted" data-t="en">Choose whichever suits your course.</span>
+          <span class="k" style="margin-top:8px"><span data-t="ms">Tumpukan pada</span><span data-t="en">Focus on</span></span><b data-t="ms">Ketepatan konsep &amp; interaktiviti</b><b data-t="en">Concept accuracy &amp; interactivity</b></div>
+      </div>
+      <h3 data-t="ms">Rubrik penilaian</h3><h3 data-t="en">Judging rubric</h3>
+      <div class="tbl"><table>
+        <thead><tr><th><span data-t="ms">Kriteria</span><span data-t="en">Criterion</span></th><th style="text-align:right"><span data-t="ms">Markah</span><span data-t="en">Marks</span></th></tr></thead>
+        <tbody>
+          <tr style="background:var(--hi-soft)"><td><span data-t="ms">Ketepatan konsep dan kandungan</span><span data-t="en">Concept and content accuracy</span></td><td style="text-align:right"><b>25</b></td></tr>
+          <tr style="background:var(--hi-soft)"><td><span data-t="ms">Interaktiviti dan kefungsian simulator</span><span data-t="en">Interactivity and simulator functionality</span></td><td style="text-align:right"><b>25</b></td></tr>
+          <tr><td><span data-t="ms">Nilai pembelajaran</span><span data-t="en">Learning value</span></td><td style="text-align:right">20</td></tr>
+          <tr><td><span data-t="ms">Kreativiti dan inovasi</span><span data-t="en">Creativity and innovation</span></td><td style="text-align:right">15</td></tr>
+          <tr><td><span data-t="ms">Penggunaan AI generatif secara bermakna</span><span data-t="en">Meaningful use of generative AI</span></td><td style="text-align:right">10</td></tr>
+          <tr><td><span data-t="ms">Dokumentasi dan video</span><span data-t="en">Documentation and video</span></td><td style="text-align:right">5</td></tr>
+          <tr><td><b><span data-t="ms">Jumlah</span><span data-t="en">Total</span></b></td><td style="text-align:right"><b>100</b></td></tr>
+        </tbody>
+      </table></div>
+      <p class="small muted" data-t="ms">Baris kuning = separuh markah: konsep yang tepat dan simulator yang benar-benar berfungsi.</p><p class="small muted" data-t="en">Yellow rows = half the marks: an accurate concept and a simulator that really works.</p>
+      <div class="prizes">
+        <div class="hi"><span data-t="ms">Johan</span><span data-t="en">Champion</span><b>RM300</b></div>
+        <div><span data-t="ms">Naib Johan</span><span data-t="en">Runner-up</span><b>RM200</b></div>
+        <div><span data-t="ms">Saguhati × 3</span><span data-t="en">Consolation × 3</span><b>RM100</b></div>
+      </div>
+      <div class="note"><b class="k"><span data-t="ms">Kepada rakan pensyarah</span><span data-t="en">To fellow lecturers</span></b><span data-t="ms">Galakkan pelajar menyertai cabaran. Simulator mereka boleh dijadikan <b>Kit Inovasi kursus</b>.</span><span data-t="en">Encourage your students to join. Their simulators can become a <b>course innovation kit</b>.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="lancar">
+  <div class="col stack">
+    <p class="script" data-t="ms">Daripada Idea Kepada Inovasi</p><p class="script" data-t="en">From Idea to Innovation</p>
+    <span class="eyebrow"><span data-t="ms">Gimik pelancaran</span><span data-t="en">Launch ceremony</span></span>
+    <p class="small" data-t="ms">Disempurnakan oleh <b>Yang Berusaha, Dr. Siti Fadzilah Mohd Nor</b>, Penolong Dekan (Pengajaran &amp; Citra), FTSM.</p>
+    <p class="small" data-t="en">Officiated by <b>Dr. Siti Fadzilah Mohd Nor</b>, Deputy Dean (Teaching &amp; Citra), FTSM.</p>
+    <div class="launch-stage" id="launchStage">
+      <canvas id="launchCv" aria-hidden="true"></canvas>
+      <div class="launch-msg" id="launchMsg"></div>
+    </div>
+    <div class="btnrow"><button class="btn hi" id="launchGo"><span data-t="ms">Lancarkan cabaran</span><span data-t="en">Launch the challenge</span></button><button class="btn sm ghost" id="launchReset"><span data-t="ms">Set semula</span><span data-t="en">Reset</span></button></div>
+
+    <h2 style="margin-top:14px" data-t="ms">Daftar sekarang</h2><h2 style="margin-top:14px" data-t="en">Register now</h2>
+    <p data-t="ms"><b>Tarikh akhir pendaftaran: 18 Disember 2026</b></p><p data-t="en"><b>Registration deadline: 18 December 2026</b></p>
+    <div class="copy"><span class="lbl"><span data-t="ms">Borang pendaftaran cabaran</span><span data-t="en">Challenge registration form</span></span><pre id="daftar">https://forms.gle/bTrx4Z8ZNwb7FH3q8</pre><button class="btn sm" data-copy="daftar">Salin</button></div>
+
+    <details class="more">
+      <summary><span data-t="ms">Contoh artikel yang dijumpai</span><span data-t="en">Example papers found</span></summary>
+      <ul class="clean small">
+        <li>Hijón-Neira, R., Connolly, C., Palacios-Alonso, D., &amp; Borrás-Gené, O. (2021). A guided Scratch visual execution environment to introduce programming concepts to CS1 students. <i>Information, 12</i>(9), 378. https://doi.org/10.3390/info12090378</li>
+        <li>Polito, G., &amp; Temperini, M. (2021). A gamified web based system for computer programming learning. <i>Computers and Education: Artificial Intelligence, 2</i>, 100029. https://doi.org/10.1016/j.caeai.2021.100029</li>
+      </ul>
+    </details>
+  </div>
+</section>
+
+<footer><div class="col"><span data-t="ms">Bengkel Cabaran Simulator · Unit Pengajaran &amp; CITRA, FTSM UKM · Bulan Akademia 2026</span><span data-t="en">Simulator Challenge Workshop · Teaching &amp; CITRA Unit, FTSM UKM · Academia Month 2026</span></div></footer>
+</main>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const KEY="kcsai-v4";
+let store={};try{store=JSON.parse(localStorage.getItem(KEY)||"{}")||{};}catch(e){store={};}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}};
+store.f=store.f||{};
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+/* ===== language ===== */
+let LANG=store.lang==="en"?"en":"ms";
+const tr=(ms,en)=>LANG==="en"?en:ms;
+const CP=()=>tr("Salin","Copy");
+
+let scale=store.scale||1;
+const setScale=v=>{scale=Math.min(1.3,Math.max(.85,v));document.documentElement.style.setProperty("--scale",scale);store.scale=scale;save();};
+setScale(scale);$("#fsUp").onclick=()=>setScale(scale+.05);$("#fsDown").onclick=()=>setScale(scale-.05);
+
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)$$("#rail a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+e.target.id));}),{rootMargin:"-40% 0px -55% 0px"});
+$$("section.step").forEach(s=>io.observe(s));
+
+document.addEventListener("click",e=>{const b=e.target.closest("[data-copy]");if(!b)return;const el=document.getElementById(b.dataset.copy);const t=el.textContent;
+  const ok=()=>{b.textContent=tr("Disalin ✓","Copied ✓");setTimeout(()=>b.textContent=CP(),1500);};
+  const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent=tr("Dipilih: tekan Ctrl+C","Selected: press Ctrl+C");};
+  try{navigator.clipboard.writeText(t).then(ok,sel);}catch(err){sel();}});
+
+/* ===== idea bank ===== */
+const IDEAS_MS={
+ "Pengaturcaraan":[["Data antara fungsi","Timbunan panggilan langkah demi langkah (demo Langkah 3)","Nilai awal, langkah","Kotak fungsi, parameter, nilai pulangan"],["Rekursi","Visualisasi timbunan faktorial/Fibonacci","Nilai n","Bingkai ditolak dan dipop"],["Kerumitan masa","Perlumbaan algoritma isihan","Saiz data, susunan awal","Bilangan perbandingan, graf masa"]],
+ "Seni bina komputer":[["Kitaran ambil-nyahkod-laksana","CPU mini dengan daftar dan RAM","Arahan, data dalam RAM","Nilai daftar, PC, bas data"],["Ingatan cache","Simulator cache hit/miss","Saiz cache, corak capaian","Kadar hit, blok diganti"]],
+ "Pengaturcaraan mudah alih":[["Reka letak responsif","Peneroka Row, Column dan Box","Saiz skrin, modifier","Susunan komponen berubah"],["Recomposition","Pengesan recomposition","Ubah state","Komponen yang dilukis semula disorot"]],
+ "Pangkalan data":[["Penormalan","Penormal jadual interaktif","Jadual, kebergantungan","Penguraian 1NF/2NF/3NF"],["Kawalan konkurensi","Simulator transaksi serentak","Jadual operasi, aras pengasingan","Dirty read, lost update, kebuntuan"]],
+ "Kecerdasan buatan":[["Carian A*","Taman grid carian","Dinding, heuristik","Nod terbuka/tertutup, laluan"],["Logik kabur","Pengawal kipas kabur","Suhu, fungsi keahlian","Darjah keahlian, output"]],
+ "Sains data":[["Gradient descent","Bola menuruni permukaan kos","Kadar pembelajaran","Trajektori, lengkung kos"],["k-means","Pengelompokan titik","Nilai k, titik data","Pergerakan centroid"]],
+ "Rangkaian komputer":[["Jabat tangan TCP","Garis masa paket","Kehilangan paket, saiz tetingkap","SYN/ACK, penghantaran semula"],["Subnetting","Kalkulator subnet visual","IP, panjang awalan","Julat hos, alamat siaran"]],
+ "Kejuruteraan perisian":[["Model SDLC","Waterfall vs Agile","Perubahan keperluan","Kos, jadual, risiko"],["Pengujian","Penjana liputan ujian","Kes ujian","Liputan cabang dan laluan"]],
+ "Interaksi manusia-komputer":[["Hukum Fitts","Ujian sasaran klik","Saiz, jarak sasaran","Masa pergerakan"],["Beban kognitif","Simulator borang","Bilangan medan","Masa siap, kadar ralat"]],
+ "Multimedia":[["Persampelan audio","Peneroka kadar sampel","Kadar sampel, kedalaman bit","Gelombang, aliasing"],["Mampatan imej","Peneroka JPEG","Kualiti","Artifak, saiz fail"]],
+ "Keselamatan komputer":[["Penyulitan RSA","Makmal RSA kecil","Nombor perdana, mesej","Kunci, sifir, nyahsulit"],["Suntikan SQL","Kotak pasir log masuk","Input, pertanyaan berparameter","Pertanyaan akhir, akibat"]]
+};
+const IDEAS_EN={
+ "Programming":[["Data between functions","Step-by-step call stack (Step 3 demo)","Starting value, steps","Function boxes, parameters, return value"],["Recursion","Factorial/Fibonacci stack visualiser","Value of n","Frames pushed and popped"],["Time complexity","Sorting algorithm race","Data size, initial order","Comparison count, time graph"]],
+ "Computer architecture":[["Fetch-decode-execute cycle","Mini CPU with registers and RAM","Instructions, data in RAM","Register values, PC, data bus"],["Cache memory","Cache hit/miss simulator","Cache size, access pattern","Hit rate, blocks replaced"]],
+ "Mobile programming":[["Responsive layout","Row, Column and Box explorer","Screen size, modifiers","Component arrangement changes"],["Recomposition","Recomposition tracker","Change state","Redrawn components highlighted"]],
+ "Databases":[["Normalisation","Interactive table normaliser","Table, dependencies","1NF/2NF/3NF decomposition"],["Concurrency control","Concurrent transaction simulator","Operation schedule, isolation level","Dirty read, lost update, deadlock"]],
+ "Artificial intelligence":[["A* search","Grid search playground","Walls, heuristic","Open/closed nodes, path"],["Fuzzy logic","Fuzzy fan controller","Temperature, membership functions","Membership degree, output"]],
+ "Data science":[["Gradient descent","Ball rolling down a cost surface","Learning rate","Trajectory, cost curve"],["k-means","Point clustering","Value of k, data points","Centroid movement"]],
+ "Computer networks":[["TCP handshake","Packet timeline","Packet loss, window size","SYN/ACK, retransmission"],["Subnetting","Visual subnet calculator","IP, prefix length","Host range, broadcast address"]],
+ "Software engineering":[["SDLC models","Waterfall vs Agile","Changing requirements","Cost, schedule, risk"],["Testing","Test coverage generator","Test cases","Branch and path coverage"]],
+ "Human-computer interaction":[["Fitts's law","Click target test","Target size, distance","Movement time"],["Cognitive load","Form simulator","Number of fields","Completion time, error rate"]],
+ "Multimedia":[["Audio sampling","Sample rate explorer","Sample rate, bit depth","Waveform, aliasing"],["Image compression","JPEG explorer","Quality","Artefacts, file size"]],
+ "Computer security":[["RSA encryption","Small RSA lab","Primes, message","Keys, ciphertext, decryption"],["SQL injection","Login sandbox","Input, parameterised query","Final query, consequence"]]
+};
+let curI=0;
+function ideas(){const I=LANG==="en"?IDEAS_EN:IDEAS_MS;const keys=Object.keys(I);
+  $("#ideaTabs").innerHTML=keys.map((k,i)=>`<button class="${i===curI?"on":""}" data-i="${i}">${k}</button>`).join("");
+  $$("#ideaTabs button").forEach(b=>b.onclick=()=>{curI=+b.dataset.i;ideas();});
+  $("#ideaBody").innerHTML=I[keys[curI]].map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("");}
+
+/* ===== prompts ===== */
+const DEF_MS={tTopik:"Fungsi dalam pengaturcaraan berstruktur: menghantar data melalui parameter dan nilai pulangan (return value)",tTak:"bagaimana nilai dari main disalin ke parameter, disimpan dalam call stack, dan dipulangkan semula kepada pemanggil",tKonteks:"Kafe Siswa: fungsi main ialah juruwang, fungsi lain ialah barista. Juruwang menghantar salinan resit (parameter) kepada barista; apabila siap, barista memulangkan kopi (return value) kepada juruwang"};
+const DEF_EN={tTopik:"Functions in structured programming: passing data through parameters and return values",tTak:"how values from main are copied into parameters, kept on the call stack, and returned to the caller",tKonteks:"Student Café: the main function is the cashier and the other function is the barista. The cashier passes a copy of the receipt (parameter) to the barista; when done, the barista returns the coffee (return value) to the cashier"};
+const DEF=()=>LANG==="en"?DEF_EN:DEF_MS;
+$$("[data-store]").forEach(el=>{el.value=store.f[el.id]??DEF()[el.id];el.addEventListener("input",()=>{store.f[el.id]=el.value;save();buildPrompts();});});
+$("#tReset").onclick=()=>{Object.keys(DEF_MS).forEach(k=>{$("#"+k).value=DEF()[k];store.f[k]=DEF()[k];});save();buildPrompts();};
+const V=id=>($("#"+id).value||"").trim()||tr("[isi]","[fill in]");
+function buildPrompts(){
+  const T=V("tTopik"),N=V("tTak"),K=V("tKonteks");
+  const R=LANG==="en"?[
+   {t:"Foundation",chips:[["neuro","Neuroscience: cognitive load"]],when:"Try now",why:"Build the foundation first so the AI doesn't get confused.",
+    p:`Build ONE complete HTML file (HTML, CSS and JavaScript in one file, no external libraries) as an interactive learning simulator for first-year students.
+
+Topic: ${T}
+What is usually invisible: ${N}
+Metaphor: ${K}
+
+Requirements:
+- Show a short code example (C language) on the left and highlight the line being executed.
+- On the right, show the call stack: each function is a box with its variables and values. Show values being copied into parameters and the return value going back to the caller.
+- Put metaphor labels next to the technical terms (for example "barista (function)").
+- "Next step", "Back" and "Reset" buttons, plus one input to change the starting value.
+- All values must be calculated by JavaScript code, not fixed text.
+- Interface language: English (or Malay if your course is taught in Malay).
+- Responsive on phones.`},
+   {t:"Predict first",chips:[["neuro","Neuroscience: prediction error"]],when:"Try now",why:"Our brains remember better when we make a mistake.",
+    p:`Update the same simulator. Do NOT change the calculation logic.
+
+Add a "Predict first" mode:
+- Before an important step (for example before the value is returned), pause the simulator and ask the user to choose a prediction from 3 or 4 options.
+- The wrong options must represent real student misconceptions for this topic.
+- After choosing, show the actual answer and explain why in 1–2 friendly sentences.
+- If wrong, don't use punishing red colours or negative scores.`},
+   {t:"Avatar & story",chips:[["neuro","Neuroscience: story & emotion"]],when:"Try now",why:"A hard concept becomes easy when it's linked to everyday situations.",
+    p:`Update the same simulator. Do NOT change the calculation logic.
+
+- Add a simple avatar character called Kak Mira, the café cashier (drawn with SVG in the same file), with a speech bubble.
+- At every step, Kak Mira explains what is happening using the metaphor: ${K}.
+- After the story explanation, show the technical term in brackets.`},
+   {t:"Repetition",chips:[["neuro","Neuroscience: retrieval practice"]],when:"Explore at home",why:"Recall and try again with different values.",
+    p:`Update the same simulator. Do NOT change the calculation logic.
+
+- After the last step, show "Quick recall": blur the code and ask 2 short questions from memory.
+- Add a "Try other values" button that changes the input randomly so the user repeats with variation.
+- Save wrongly answered questions in localStorage and ask them again when the user returns.`},
+   {t:"Levels & DDA",chips:[["neuro","Neuroscience: the right challenge"],["dda","DDA"]],when:"Explore at home",why:"Make the hard parts easier and the easy parts more challenging.",
+    p:`Update the same simulator.
+
+- Add three levels: Basic, Intermediate and Challenging, each with a different code example. The Challenging level must test the most common misconception for the topic "${T}".
+- Implement Dynamic Difficulty Adjustment (DDA): if the user predicts correctly 2 times in a row, suggest moving up a level; if wrong 2 times in a row, show a hint and suggest moving down a level.
+- Display the DDA status so the user understands why the level changes.`}
+  ]:[
+   {t:"Asas",chips:[["neuro","Neurosains: beban kognitif"]],when:"Cuba sekarang",why:"Bina asas (foundation) dahulu supaya AI tidak keliru.",
+    p:`Bina SATU fail HTML lengkap (HTML, CSS dan JavaScript dalam satu fail, tanpa pustaka luar) sebagai simulator pembelajaran interaktif untuk pelajar tahun satu.
+
+Topik: ${T}
+Apa yang biasanya tidak kelihatan: ${N}
+Metafora: ${K}
+
+Keperluan:
+- Paparkan contoh kod pendek (bahasa C) di sebelah kiri dan serlahkan baris yang sedang dilaksanakan.
+- Di sebelah kanan, paparkan call stack: setiap fungsi ialah satu kotak dengan pemboleh ubah dan nilainya. Tunjukkan nilai disalin ke parameter dan nilai pulangan kembali kepada pemanggil.
+- Gunakan label metafora di sebelah istilah teknikal (contohnya "barista (fungsi)").
+- Butang "Langkah seterusnya", "Undur" dan "Set semula", serta satu input untuk menukar nilai awal.
+- Semua nilai mesti dikira oleh kod JavaScript, bukan teks tetap.
+- Bahasa antara muka: Bahasa Melayu (atau Bahasa Inggeris jika kursus anda dalam Bahasa Inggeris).
+- Responsif untuk telefon.`},
+   {t:"Ramal dahulu",chips:[["neuro","Neurosains: ralat ramalan"]],when:"Cuba sekarang",why:"Otak kita lebih mengingati sesuatu apabila kita melakukan kesilapan.",
+    p:`Kemas kini simulator yang sama. JANGAN ubah logik pengiraan.
+
+Tambah mod "Ramal dahulu":
+- Sebelum langkah penting (contohnya sebelum nilai dipulangkan), hentikan simulator dan minta pengguna memilih ramalan daripada 3 atau 4 pilihan.
+- Pilihan salah mesti mewakili salah faham sebenar pelajar bagi topik ini.
+- Selepas memilih, tunjukkan jawapan sebenar dan terangkan mengapa dalam 1–2 ayat yang mesra.
+- Jika salah, jangan guna warna merah yang menghukum atau skor negatif.`},
+   {t:"Avatar & cerita",chips:[["neuro","Neurosains: cerita & emosi"]],when:"Cuba sekarang",why:"Konsep yang sukar menjadi mudah apabila dikaitkan dengan situasi harian.",
+    p:`Kemas kini simulator yang sama. JANGAN ubah logik pengiraan.
+
+- Tambah satu watak avatar ringkas bernama Kak Mira, juruwang kafe (dilukis dengan SVG dalam fail yang sama), dengan belon dialog.
+- Pada setiap langkah, Kak Mira menerangkan apa yang berlaku menggunakan metafora: ${K}.
+- Selepas penerangan cerita, tunjukkan istilah teknikal dalam kurungan.`},
+   {t:"Ulangan",chips:[["neuro","Neurosains: mengingat semula"]],when:"Terokai di rumah",why:"Imbas kembali dan cuba dengan nilai lain.",
+    p:`Kemas kini simulator yang sama. JANGAN ubah logik pengiraan.
+
+- Selepas langkah terakhir, paparkan "Imbas kembali": kaburkan kod dan tanya 2 soalan ringkas dari ingatan.
+- Tambah butang "Cuba nilai lain" yang menukar input secara rawak supaya pengguna mengulang dengan variasi.
+- Simpan soalan yang dijawab salah dalam localStorage dan tanya semula apabila pengguna kembali.`},
+   {t:"Tahap & DDA",chips:[["neuro","Neurosains: cabaran yang sesuai"],["dda","DDA"]],when:"Terokai di rumah",why:"Yang susah dipermudah, yang senang dicabar.",
+    p:`Kemas kini simulator yang sama.
+
+- Tambah tiga tahap: Asas, Sederhana dan Mencabar, setiap satu dengan contoh kod berbeza. Tahap Mencabar mesti menguji salah faham paling biasa bagi topik "${T}".
+- Laksanakan Dynamic Difficulty Adjustment (DDA): jika ramalan betul 2 kali berturut-turut, cadangkan naik tahap; jika salah 2 kali berturut-turut, tunjukkan petunjuk dan cadangkan turun tahap.
+- Paparkan status DDA supaya pengguna memahami mengapa tahap berubah.`}
+  ];
+  $("#ladder").innerHTML=R.map((r,i)=>`<div class="rung"><div class="no">${i+1}<span>PROMPT</span></div><div class="body">
+    <h3>${r.t} ${r.chips.map(([c,l])=>`<span class="chip ${c}">${l}</span>`).join(" ")} <span class="chip ${i<3?"":"dda"}">${r.when}</span></h3>
+    <p class="small muted">${r.why}</p>
+    <div class="copy"><span class="lbl">Prompt ${i+1}</span><pre id="pr${i}">${esc(r.p)}</pre><button class="btn sm" data-copy="pr${i}">${CP()}</button></div></div></div>`).join("");
+  $("#pExtract").textContent=tr(`Berdasarkan artikel yang dimuat naik, senaraikan dalam bentuk jadual (Bahasa Melayu), dengan nombor halaman bagi setiap maklumat:
+1. Masalah pembelajaran yang ditangani
+2. Konsep atau topik yang diajar
+3. Elemen interaktif yang digunakan (contohnya cerita/avatar, maklum balas pantas, permainan, visualisasi)
+4. Bagaimana kajian itu menilai keberkesanannya
+5. Dapatan utama
+Kemudian cadangkan 3 elemen interaktif yang boleh saya guna untuk simulator topik "${T}".`,
+`Based on the uploaded paper, list the following in a table (in English), with page numbers for each item:
+1. The learning problem addressed
+2. The concept or topic taught
+3. The interactive elements used (for example story/avatar, instant feedback, games, visualisation)
+4. How the study evaluated its effectiveness
+5. Key findings
+Then suggest 3 interactive elements I could use in a simulator on the topic "${T}".`);
+  $("#pCheck").textContent=tr(`Bertindak sebagai Auditor dan Pensyarah Pakar dalam topik "${T}". Semak simulator dalam perbualan ini. JANGAN tulis semula kod.
+1. Bina jadual jejak (trace table) untuk satu input contoh dan bandingkan dengan apa yang simulator paparkan.
+2. Senaraikan kesilapan konsep, istilah atau pengiraan, dengan sebab.
+3. Cadangkan kes sempadan untuk diuji (contohnya nilai 0 atau negatif) dan output yang dijangka.
+4. Nyatakan rujukan (buku teks atau nota) yang boleh saya guna untuk mengesahkan.`,
+`Act as an Auditor and Expert Lecturer on the topic "${T}". Review the simulator in this conversation. Do NOT rewrite the code.
+1. Build a trace table for one sample input and compare it with what the simulator displays.
+2. List any conceptual, terminology or calculation errors, with reasons.
+3. Suggest boundary cases to test (for example 0 or negative values) and the expected output.
+4. Name references (textbooks or notes) I can use to verify it.`);
+  $("#readme").textContent=tr(`# [Nama simulator]
+Pautan GitHub Pages: https://[nama-pengguna].github.io/[repo]/
+Video demo (2–3 minit): [pautan]
+Peserta: [nama, no. matrik]
+
+## Konsep & objektif
+Kursus: [kod & nama]   Topik: ${T}
+Selepas menggunakan simulator, pengguna boleh: [objektif]
+
+## Idea daripada kajian lepas
+[Artikel daripada Scopus AI, elemen interaktif yang diambil, DOI]
+
+## Reka bentuk
+Metafora: [...]  Input: [...]  Output: [...]  Elemen: [ramal dahulu / avatar / ulangan / DDA]
+
+## Penggunaan AI generatif
+Alat: [...]  Prompt yang digunakan: [prompt 1–5]
+Kesilapan AI yang dikesan & cara disahkan: [...]
+
+## Semakan ketepatan
+Jadual jejak: [...]  Kes sempadan: [...]  Rujukan nota: [...]  Rakan: [...]  Pensyarah: [...]`,
+`# [Simulator name]
+GitHub Pages link: https://[username].github.io/[repo]/
+Demo video (2–3 minutes): [link]
+Participant: [name, matric no.]
+
+## Concept & objectives
+Course: [code & name]   Topic: ${T}
+After using the simulator, users will be able to: [objective]
+
+## Ideas from past research
+[Paper from Scopus AI, interactive elements adopted, DOI]
+
+## Design
+Metaphor: [...]  Input: [...]  Output: [...]  Elements: [predict first / avatar / repetition / DDA]
+
+## Use of generative AI
+Tools: [...]  Prompts used: [prompts 1–5]
+AI mistakes found & how they were verified: [...]
+
+## Accuracy checks
+Trace table: [...]  Boundary cases: [...]  Notes referenced: [...]  Friend: [...]  Lecturer: [...]`);
+}
+
+store.chk=store.chk||{};
+$$("#checks input").forEach(c=>{c.checked=!!store.chk[c.dataset.i];c.onchange=()=>{store.chk[c.dataset.i]=c.checked;save();};});
+
+let actx=null;
+function tone(seq){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();let t=actx.currentTime;seq.forEach(([f,d])=>{const o=actx.createOscillator(),g=actx.createGain();o.type="triangle";o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.16,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(actx.destination);o.start(t);o.stop(t+d+.02);t+=d*.9;});}catch(e){}}
+
+/* ===== demo simulator: data between functions ===== */
+function avatar(mood){
+  let s='<svg viewBox="0 0 80 96" aria-hidden="true"><path d="M12 96 Q12 64 40 62 Q68 64 68 96 Z" fill="#2F5BD8"/><path d="M30 70 h20 v26 h-20z" fill="#F4F7FC"/>';
+  s+='<path d="M19 42 Q18 13 40 13 Q62 13 61 42 L64 72 Q40 80 16 72 Z" fill="#7C3AED"/><ellipse cx="40" cy="40" rx="14" ry="16" fill="#E8BE98"/>';
+  s+='<circle cx="34" cy="39" r="2" fill="#1B1B1B"/><circle cx="46" cy="39" r="2" fill="#1B1B1B"/>';
+  if(mood==="oops")s+='<ellipse cx="40" cy="48" rx="3" ry="3.5" fill="none" stroke="#1B1B1B" stroke-width="1.6"/>';
+  else if(mood==="think")s+='<path d="M35 47 L45 46" stroke="#1B1B1B" stroke-width="1.7" stroke-linecap="round"/>';
+  else s+='<path d="M34 46 Q40 52 46 46" fill="none" stroke="#1B1B1B" stroke-width="1.8" stroke-linecap="round"/>';
+  if(mood==="win")s+='<path d="M9 22 l3 -7 l3 7 l-7 -4.5 h8z" fill="#F2B705"/><path d="M66 12 l2 -5 l2 5 l-5 -3 h6z" fill="#F2B705"/>';
+  return s+'</svg>';
+}
+const PRICE=4.5, f2=v=>v.toFixed(2), RM=v=>"RM"+f2(v);
+const KW=w=>`<span class="kw">${w}</span>`;
+/* identifier names per language */
+const NM_MS={kiraHarga:"kiraHarga",tolakDiskaun:"tolakDiskaun",tambahCawan:"tambahCawan",kuantiti:"kuantiti",hargaSeunit:"hargaSeunit",jumlah:"jumlah",cawan:"cawan",harga:"harga",bayar:"bayar",peratus:"peratus",baki:"baki",baru:"baru",Harga:"Harga",Bayaran:"Bayaran",Cawan:"Cawan",Baru:"Baru"};
+const NM_EN={kiraHarga:"calcPrice",tolakDiskaun:"applyDiscount",tambahCawan:"addCup",kuantiti:"quantity",hargaSeunit:"unitPrice",jumlah:"total",cawan:"cups",harga:"price",bayar:"pay",peratus:"percent",baki:"balance",baru:"newCups",Harga:"Price",Bayaran:"Payment",Cawan:"Cups",Baru:"New"};
+const nm=k=>(LANG==="en"?NM_EN:NM_MS)[k];
+function CODE(L){const n=nm;
+ if(L===1)return[`${KW("float")} ${n("kiraHarga")}(${KW("int")} ${n("kuantiti")}, ${KW("float")} ${n("hargaSeunit")}) {`,`    ${KW("float")} ${n("jumlah")} = ${n("kuantiti")} * ${n("hargaSeunit")};`,`    ${KW("return")} ${n("jumlah")};`,`}`,``,`${KW("int")} main() {`,`    ${KW("int")} ${n("cawan")} = {N};`,`    ${KW("float")} ${n("harga")} = ${n("kiraHarga")}(${n("cawan")}, 4.50);`,`    printf("${n("Harga")}: RM%.2f\\n", ${n("harga")});`,`    ${KW("return")} 0;`,`}`];
+ if(L===2)return[`${KW("float")} ${n("kiraHarga")}(${KW("int")} ${n("kuantiti")}, ${KW("float")} ${n("hargaSeunit")}) {`,`    ${KW("float")} ${n("jumlah")} = ${n("kuantiti")} * ${n("hargaSeunit")};`,`    ${KW("return")} ${n("jumlah")};`,`}`,``,`${KW("float")} ${n("tolakDiskaun")}(${KW("float")} ${n("jumlah")}, ${KW("int")} ${n("peratus")}) {`,`    ${KW("float")} ${n("baki")} = ${n("jumlah")} - (${n("jumlah")} * ${n("peratus")} / 100);`,`    ${KW("return")} ${n("baki")};`,`}`,``,`${KW("int")} main() {`,`    ${KW("int")} ${n("cawan")} = {N};`,`    ${KW("float")} ${n("harga")} = ${n("kiraHarga")}(${n("cawan")}, 4.50);`,`    ${KW("float")} ${n("bayar")} = ${n("tolakDiskaun")}(${n("harga")}, {P});`,`    printf("${n("Bayaran")}: RM%.2f\\n", ${n("bayar")});`,`    ${KW("return")} 0;`,`}`];
+ return[`${KW("int")} ${n("tambahCawan")}(${KW("int")} ${n("cawan")}) {`,`    ${n("cawan")} = ${n("cawan")} + 1;`,`    ${KW("return")} ${n("cawan")};`,`}`,``,`${KW("int")} main() {`,`    ${KW("int")} ${n("cawan")} = {N};`,`    ${n("tambahCawan")}(${n("cawan")});`,`    printf("${n("Cawan")}: %d\\n", ${n("cawan")});`,`    ${KW("int")} ${n("baru")} = ${n("tambahCawan")}(${n("cawan")});`,`    printf("${n("Baru")}: %d\\n", ${n("baru")});`,`    ${KW("return")} 0;`,`}`];
+}
+function opts(correct,list){const seen=new Set([correct]);const out=[correct];list.forEach(x=>{if(!seen.has(x)&&out.length<4){seen.add(x);out.push(x);}});
+  const k=(correct.length+out.length)%out.length;const r=out.slice(k).concat(out.slice(0,k));return{options:r,answer:r.indexOf(correct)};}
+function build(L,n,p){
+  const S=[];const F=(name,vars)=>{const v={};Object.entries(vars).forEach(([k,x])=>{v[nm(k)]=Array.isArray(x)?[x[0],tr("salinan","copy")]:x;});return{name:nm(name)||name,vars:v};};
+  const c=nm, cp=tr("salinan","copy");
+  if(L===1){
+    const t=n*PRICE;
+    S.push({line:6,frames:[F("main",{cawan:"?",harga:"?"})],con:"",say:tr("Kaunter dibuka. Saya juruwang, iaitu fungsi <b>main</b>. Saya sediakan kotak untuk pemboleh ubah saya.","The counter is open. I'm the cashier, the <b>main</b> function. I set up boxes for my variables.")});
+    S.push({line:7,frames:[F("main",{cawan:n,harga:"?"})],con:"",say:tr(`Pelanggan memesan ${n} cawan kopi. Nilai ${n} disimpan dalam <b>cawan</b>.`,`A customer orders ${n} cups of coffee. The value ${n} is stored in <b>${c("cawan")}</b>.`)});
+    S.push({line:8,frames:[F("main",{cawan:n,harga:"?"}),F("kiraHarga",{kuantiti:[n],hargaSeunit:[f2(PRICE)]})],con:"",say:tr(`Saya hantar <b>salinan resit</b> kepada barista <b>kiraHarga</b>: nilai ${n} dan 4.50 disalin ke parameter. Resit asal (cawan) kekal pada saya. Satu kotak baharu masuk ke call stack.`,`I pass a <b>copy of the receipt</b> to the barista <b>${c("kiraHarga")}</b>: the values ${n} and 4.50 are copied into the parameters. The original receipt (${c("cawan")}) stays with me. A new box goes onto the call stack.`),mood:"think"});
+    S.push({line:2,frames:[F("main",{cawan:n,harga:"?"}),F("kiraHarga",{kuantiti:n,hargaSeunit:f2(PRICE),jumlah:f2(t)})],con:"",say:tr(`Barista mengira ${n} × 4.50 = ${f2(t)} dan menyimpannya dalam <b>jumlah</b>, pemboleh ubah miliknya sendiri.`,`The barista calculates ${n} × 4.50 = ${f2(t)} and stores it in <b>${c("jumlah")}</b>, a variable of its own.`)});
+    const o=opts(f2(t),[f2(PRICE),String(n),tr("Tiada, jumlah hilang","Nothing, total is lost")]);
+    S.push({line:3,frames:[F("main",{cawan:n,harga:f2(t)})],con:"",say:tr(`Barista memulangkan "kopi": <b>return</b> menghantar ${f2(t)} kembali kepada saya. Kotak kiraHarga dibuang; jumlah hilang, tetapi nilainya selamat dalam <b>harga</b>.`,`The barista returns the "coffee": <b>return</b> sends ${f2(t)} back to me. The ${c("kiraHarga")} box is removed; ${c("jumlah")} is gone, but its value is safe in <b>${c("harga")}</b>.`),
+      predict:{q:tr("Nilai apakah yang akan disimpan dalam harga di main?",`What value will be stored in ${c("harga")} in main?`),...o,hint:tr("Lihat nilai jumlah dalam kotak kiraHarga.",`Look at the value of ${c("jumlah")} in the ${c("kiraHarga")} box.`),ex:tr("return menyalin nilai jumlah kembali kepada pemanggil, kemudian kotak fungsi dibuang.",`return copies the value of ${c("jumlah")} back to the caller, then the function's box is removed.`)}});
+    S.push({line:9,frames:[F("main",{cawan:n,harga:f2(t)})],con:`${c("Harga")}: ${RM(t)}`,say:tr("printf memaparkan harga kepada pelanggan.","printf shows the price to the customer.")});
+    S.push({line:10,frames:[],con:`${c("Harga")}: ${RM(t)}`,say:tr("Program tamat. Semua kotak dibuang dari timbunan.","The program ends. All boxes are removed from the stack."),end:true,mood:"win"});
+  } else if(L===2){
+    const t=n*PRICE, b=t-(t*p/100);
+    S.push({line:11,frames:[F("main",{cawan:"?",harga:"?",bayar:"?"})],con:"",say:tr("Kaunter dibuka. Saya, juruwang (<b>main</b>), sediakan tiga kotak pemboleh ubah.","The counter is open. I, the cashier (<b>main</b>), set up three variable boxes.")});
+    S.push({line:12,frames:[F("main",{cawan:n,harga:"?",bayar:"?"})],con:"",say:tr(`Pesanan: ${n} cawan.`,`Order: ${n} cups.`)});
+    S.push({line:13,frames:[F("main",{cawan:n,harga:"?",bayar:"?"}),F("kiraHarga",{kuantiti:[n],hargaSeunit:[f2(PRICE)]})],con:"",say:tr("Barista pertama, <b>kiraHarga</b>, menerima salinan resit.",`The first barista, <b>${c("kiraHarga")}</b>, receives a copy of the receipt.`),mood:"think"});
+    S.push({line:2,frames:[F("main",{cawan:n,harga:"?",bayar:"?"}),F("kiraHarga",{kuantiti:n,hargaSeunit:f2(PRICE),jumlah:f2(t)})],con:"",say:`${n} × 4.50 = ${f2(t)}.`});
+    const o1=opts(f2(t),[f2(PRICE),String(n),f2(b)]);
+    S.push({line:3,frames:[F("main",{cawan:n,harga:f2(t),bayar:"?"})],con:"",say:tr(`${f2(t)} dipulangkan dan disimpan dalam <b>harga</b>.`,`${f2(t)} is returned and stored in <b>${c("harga")}</b>.`),predict:{q:tr("Apakah nilai harga selepas kiraHarga memulangkan nilainya?",`What is the value of ${c("harga")} after ${c("kiraHarga")} returns?`),...o1,hint:tr("Fungsi memulangkan nilai jumlah.",`The function returns the value of ${c("jumlah")}.`),ex:tr("Nilai pulangan kiraHarga ialah jumlah = kuantiti × hargaSeunit.",`The return value of ${c("kiraHarga")} is ${c("jumlah")} = ${c("kuantiti")} × ${c("hargaSeunit")}.`)}});
+    S.push({line:14,frames:[F("main",{cawan:n,harga:f2(t),bayar:"?"}),F("tolakDiskaun",{jumlah:[f2(t)],peratus:[p]})],con:"",say:tr(`Barista kedua, <b>tolakDiskaun</b>, menerima salinan harga (${f2(t)}) dan diskaun ${p}%. Parameternya bernama <b>jumlah</b>, tetapi ini kotak baharu, bukan jumlah dalam kiraHarga.`,`The second barista, <b>${c("tolakDiskaun")}</b>, receives a copy of the price (${f2(t)}) and a ${p}% discount. Its parameter is called <b>${c("jumlah")}</b>, but this is a new box, not the ${c("jumlah")} in ${c("kiraHarga")}.`),mood:"think"});
+    S.push({line:7,frames:[F("main",{cawan:n,harga:f2(t),bayar:"?"}),F("tolakDiskaun",{jumlah:f2(t),peratus:p,baki:f2(b)})],con:"",say:`${f2(t)} − (${f2(t)} × ${p} / 100) = ${f2(b)}.`});
+    const o2=opts(f2(b),[f2(t),f2(t*p/100),"0.00"]);
+    S.push({line:8,frames:[F("main",{cawan:n,harga:f2(t),bayar:f2(b)})],con:"",say:tr(`${f2(b)} dipulangkan dan disimpan dalam <b>bayar</b>.`,`${f2(b)} is returned and stored in <b>${c("bayar")}</b>.`),predict:{q:tr("Apakah nilai bayar selepas tolakDiskaun selesai?",`What is the value of ${c("bayar")} after ${c("tolakDiskaun")} finishes?`),...o2,hint:tr("baki = jumlah tolak diskaun.",`${c("baki")} = ${c("jumlah")} minus the discount.`),ex:tr("tolakDiskaun memulangkan baki, iaitu harga selepas diskaun, bukan nilai diskaun itu sendiri.",`${c("tolakDiskaun")} returns ${c("baki")}, the price after the discount, not the discount amount itself.`)}});
+    S.push({line:15,frames:[F("main",{cawan:n,harga:f2(t),bayar:f2(b)})],con:`${c("Bayaran")}: ${RM(b)}`,say:tr("printf memaparkan bayaran.","printf shows the payment.")});
+    S.push({line:16,frames:[],con:`${c("Bayaran")}: ${RM(b)}`,say:tr("Program tamat. Dua barista, dua kotak, dua nilai pulangan.","The program ends. Two baristas, two boxes, two return values."),end:true,mood:"win"});
+  } else {
+    S.push({line:6,frames:[F("main",{cawan:"?",baru:"?"})],con:"",say:tr("Tahap mencabar: perhatikan nama yang sama di dua tempat.","Challenging level: watch for the same name in two places."),mood:"think"});
+    S.push({line:7,frames:[F("main",{cawan:n,baru:"?"})],con:"",say:`${c("cawan")} = ${n}.`});
+    S.push({line:8,frames:[F("main",{cawan:n,baru:"?"}),F("tambahCawan",{cawan:[n]})],con:"",say:tr("Kedua-dua kotak ada pemboleh ubah bernama <b>cawan</b>, tetapi ia <b>dua kotak berbeza</b>. Barista tambahCawan hanya menerima salinan resit.",`Both boxes have a variable called <b>${c("cawan")}</b>, but they are <b>two different boxes</b>. The barista ${c("tambahCawan")} only receives a copy of the receipt.`),mood:"think"});
+    S.push({line:2,frames:[F("main",{cawan:n,baru:"?"}),F("tambahCawan",{cawan:n+1})],con:"",say:tr(`cawan dalam tambahCawan menjadi ${n+1}. Lihat kotak main: cawan masih ${n}.`,`${c("cawan")} inside ${c("tambahCawan")} becomes ${n+1}. Look at the main box: ${c("cawan")} is still ${n}.`)});
+    S.push({line:3,frames:[F("main",{cawan:n,baru:"?"})],con:"",say:tr(`Nilai ${n+1} dipulangkan, tetapi main tidak menyimpannya di mana-mana. Nilai itu hilang.`,`The value ${n+1} is returned, but main doesn't store it anywhere. The value is lost.`)});
+    const o1=opts(`${c("Cawan")}: ${n}`,[`${c("Cawan")}: ${n+1}`,tr("Ralat kompilasi","Compile error"),`${c("Cawan")}: 0`]);
+    S.push({line:9,frames:[F("main",{cawan:n,baru:"?"})],con:`${c("Cawan")}: ${n}`,say:tr(`Dipaparkan "Cawan: ${n}". Parameter ialah <b>salinan</b> (pass by value).`,`It prints "Cups: ${n}". A parameter is a <b>copy</b> (pass by value).`),predict:{q:tr('Apakah yang dipaparkan oleh printf("Cawan: %d", cawan)?','What does printf("Cups: %d", cups) display?'),...o1,hint:tr("Bandingkan kotak main dengan kotak tambahCawan tadi.",`Compare the main box with the ${c("tambahCawan")} box earlier.`),ex:tr("Mengubah parameter dalam fungsi tidak mengubah pemboleh ubah asal di main, kerana fungsi hanya menerima salinan nilai.","Changing a parameter inside a function does not change the original variable in main, because the function only receives a copy of the value.")}});
+    S.push({line:10,frames:[F("main",{cawan:n,baru:"?"}),F("tambahCawan",{cawan:[n]})],con:`${c("Cawan")}: ${n}`,say:tr("Kali ini main akan menyimpan nilai pulangan.","This time main will store the return value.")});
+    S.push({line:2,frames:[F("main",{cawan:n,baru:"?"}),F("tambahCawan",{cawan:n+1})],con:`${c("Cawan")}: ${n}`,say:tr(`cawan dalam fungsi menjadi ${n+1}.`,`${c("cawan")} inside the function becomes ${n+1}.`)});
+    S.push({line:10,frames:[F("main",{cawan:n,baru:n+1})],con:`${c("Cawan")}: ${n}`,say:tr(`Nilai ${n+1} disimpan dalam <b>baru</b>.`,`The value ${n+1} is stored in <b>${c("baru")}</b>.`)});
+    const o2=opts(`${c("Baru")}: ${n+1}`,[`${c("Baru")}: ${n}`,`${c("Baru")}: ${n+2}`,`${c("Baru")}: 0`]);
+    S.push({line:11,frames:[F("main",{cawan:n,baru:n+1})],con:`${c("Cawan")}: ${n}\n${c("Baru")}: ${n+1}`,say:tr(`Dipaparkan "Baru: ${n+1}". Cara betul mendapatkan hasil fungsi ialah menyimpan nilai pulangannya.`,`It prints "New: ${n+1}". The right way to get a function's result is to store its return value.`),predict:{q:tr('Apakah yang dipaparkan oleh printf("Baru: %d", baru)?','What does printf("New: %d", newCups) display?'),...o2,hint:tr("baru menyimpan nilai yang dipulangkan.",`${c("baru")} stores the returned value.`),ex:tr("baru = tambahCawan(cawan) menyimpan nilai pulangan, iaitu cawan + 1.","newCups = addCup(cups) stores the return value, which is cups + 1.")}});
+    S.push({line:12,frames:[],con:`${c("Cawan")}: ${n}\n${c("Baru")}: ${n+1}`,say:tr("Program tamat. Ingat: fungsi menerima salinan; hasilnya kembali melalui return.","The program ends. Remember: a function receives a copy; the result comes back through return."),end:true,mood:"win"});
+  }
+  return S;
+}
+const D={L:1,n:3,p:10,S:[],i:0,ans:{},streakC:0,streakW:0,hint:false,recall:false};
+const RECALL_MS=[
+ {q:"Apabila fungsi dipanggil, parameternya menerima…",o:["Salinan nilai","Pemboleh ubah asal itu sendiri","Kod fungsi pemanggil"],a:0},
+ {q:"Apakah yang berlaku kepada pemboleh ubah tempatan apabila fungsi tamat?",o:["Kotaknya dibuang dari timbunan","Kekal dalam ingatan selamanya","Disalin ke main secara automatik"],a:0},
+ {q:"Bagaimana main mendapat hasil daripada sebuah fungsi?",o:["Menyimpan nilai return dalam pemboleh ubah","Fungsi menukar pemboleh ubah main secara terus","Melalui printf"],a:0}
+];
+const RECALL_EN=[
+ {q:"When a function is called, its parameter receives…",o:["A copy of the value","The original variable itself","The caller's code"],a:0},
+ {q:"What happens to local variables when a function ends?",o:["Its box is removed from the stack","They stay in memory forever","They are copied to main automatically"],a:0},
+ {q:"How does main get a result from a function?",o:["By storing the return value in a variable","The function changes main's variable directly","Through printf"],a:0}
+];
+const LV=()=>tr(["","Asas","Sederhana","Mencabar"],["","Basic","Intermediate","Challenging"]);
+function clearUI(){$("#pred").hidden=true;$("#code").style.filter="";}
+function reset(){D.S=build(D.L,D.n,D.p);D.i=0;D.ans={};D.recall=false;clearUI();$("#ddaBanner").hidden=true;render();}
+function render(){
+  const s=D.S[D.i];
+  const code=CODE(D.L).map(l=>l.replace("{N}",D.n).replace("{P}",D.p));
+  $("#code").innerHTML=code.map((l,k)=>`<div class="${k+1===s.line?"on":""}"><i>${k+1}</i><span>${l||" "}</span></div>`).join("");
+  const pf=D.i>0?D.S[D.i-1].frames:[];
+  $("#stackv").innerHTML=s.frames.length?s.frames.map((f,fi)=>{const old=pf.find(x=>x.name===f.name);const top=fi===s.frames.length-1;
+    return `<div class="frame${top?" top":""}"><h4><span>${f.name}()</span><span>${top?tr("sedang berjalan","running"):tr("menunggu","waiting")}</span></h4><table>${Object.entries(f.vars).map(([k,v])=>{const val=Array.isArray(v)?v[0]:v,tag=Array.isArray(v)?`<span class="copytag">${v[1]}</span>`:"";const ov=old&&old.vars[k]!==undefined?(Array.isArray(old.vars[k])?old.vars[k][0]:old.vars[k]):undefined;const chg=ov!==undefined&&String(ov)!==String(val);return `<tr class="${chg?"chg":""}"><td>${k}${tag}</td><td class="v">${val}</td></tr>`;}).join("")}</table></div>`;}).join(""):`<p class="small muted">${tr("Timbunan kosong.","The stack is empty.")}</p>`;
+  $("#console").textContent=s.con||"";
+  $("#ava").innerHTML=avatar(s.mood||"happy");$("#say").innerHTML=s.say;
+  $("#sBack").disabled=D.i===0;
+  $("#sNext").disabled=!!s.end&&D.recall;
+  $("#sNext").textContent=s.end?(D.recall?tr("Selesai","Done"):tr("Imbas kembali","Quick recall")):tr("Langkah seterusnya","Next step");
+  $("#discWrap").hidden=D.L!==2;
+  $$("#lvl button").forEach(b=>b.classList.toggle("on",+b.dataset.l===D.L));
+  ddaStat();
+}
+function ddaStat(){$("#ddaStat").innerHTML=`<span class="pill">DDA</span><span>${tr("Betul berturut-turut","Correct in a row")}: <b>${D.streakC}</b></span><span>${tr("Salah berturut-turut","Wrong in a row")}: <b>${D.streakW}</b></span><span class="pill ${D.hint?"warn":""}">${tr("Petunjuk","Hints")}: ${D.hint?tr("hidup","on"):tr("mati","off")}</span><span>${tr("Tahap","Level")}: <b>${LV()[D.L]}</b></span>`;}
+function showPredict(step,onDone){
+  const P=step.predict,box=$("#pred");box.hidden=false;$("#sNext").disabled=true;
+  $("#ava").innerHTML=avatar("think");$("#say").innerHTML=tr("Tunggu! Sebelum saya teruskan, cuba <b>ramal</b> dahulu.","Wait! Before I carry on, try to <b>predict</b> first.");
+  box.innerHTML=`<b>${tr("Ramal dahulu","Predict first")}: ${P.q}</b>${D.hint?`<span class="small"><b>${tr("Petunjuk","Hint")}:</b> ${P.hint}</span>`:""}<div class="opts">${P.options.map((o,j)=>`<button class="o" data-j="${j}">${esc(o)}</button>`).join("")}</div><span class="small" id="pEx"></span>`;
+  box.querySelectorAll("button.o").forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=j===P.answer;
+    box.querySelectorAll("button.o").forEach(x=>{x.disabled=true;if(+x.dataset.j===P.answer)x.classList.add("right");else if(+x.dataset.j===j)x.classList.add("wrong");});
+    if(ok){D.streakC++;D.streakW=0;tone([[523,.1],[784,.18]]);}else{D.streakW++;D.streakC=0;tone([[392,.25]]);}
+    if(D.streakW>=2)D.hint=true; if(D.streakC>=2)D.hint=false;
+    onDone(ok);
+    $("#pEx").innerHTML=(ok?`<b>${tr("Tepat!","Correct!")}</b> `:`<b>${tr("Belum tepat, dan itu bagus untuk belajar.","Not quite, and that's great for learning.")}</b> `)+P.ex;
+    $("#ava").innerHTML=avatar(ok?"win":"oops");
+    dda();});
+}
+function dda(){const b=$("#ddaBanner");
+  if(D.streakC>=2&&D.L<3){b.hidden=false;b.innerHTML=`<span><b>DDA:</b> ${tr("2 ramalan betul berturut-turut. Sedia untuk cabaran lebih tinggi?","2 correct predictions in a row. Ready for a bigger challenge?")}</span><button class="btn sm" id="ddaUp">${tr("Naik ke tahap","Move up to")} ${LV()[D.L+1]}</button>`;$("#ddaUp").onclick=()=>{D.L++;D.streakC=0;b.hidden=true;reset();};}
+  else if(D.streakW>=2&&D.L>1){b.hidden=false;b.innerHTML=`<span><b>DDA:</b> ${tr("2 ramalan meleset. Petunjuk kini dihidupkan.","2 predictions missed. Hints are now on.")}</span><button class="btn sm ghost" id="ddaDown">${tr("Cuba tahap lebih mudah","Try an easier level")}</button>`;$("#ddaDown").onclick=()=>{D.L--;D.streakW=0;b.hidden=true;reset();};}
+  else if(D.streakW>=2){b.hidden=false;b.innerHTML=`<span><b>DDA:</b> ${tr("petunjuk dihidupkan untuk membantu anda.","hints are on to help you.")}</span>`;}
+  else b.hidden=true;
+  ddaStat();}
+function recall(){
+  D.recall=true;render();
+  const RC=LANG==="en"?RECALL_EN:RECALL_MS;
+  const pick=[RC[D.n%3],RC[(D.n+1)%3]];const box=$("#pred");box.hidden=false;
+  $("#ava").innerHTML=avatar("think");$("#say").innerHTML=tr("Imbas kembali! Jawab dari ingatan, tanpa melihat kod.","Quick recall! Answer from memory, without looking at the code.");
+  $("#code").style.filter="blur(5px)";
+  box.innerHTML=`<b>${tr("Imbas kembali","Quick recall")}</b>`+pick.map((q,qi)=>`<div class="stack" style="gap:6px"><span>${qi+1}. ${q.q}</span><div class="opts">${q.o.map((o,j)=>`<button class="o" data-q="${qi}" data-j="${j}">${o}</button>`).join("")}</div></div>`).join("")+`<div class="btnrow"><button class="btn sm" id="again">${tr("Cuba nilai lain","Try other values")}</button></div>`;
+  box.querySelectorAll("button.o").forEach(b=>b.onclick=()=>{const q=pick[+b.dataset.q],j=+b.dataset.j;box.querySelectorAll(`button.o[data-q="${b.dataset.q}"]`).forEach(x=>{x.disabled=true;if(+x.dataset.j===q.a)x.classList.add("right");else if(+x.dataset.j===j)x.classList.add("wrong");});});
+  $("#again").onclick=rand;
+}
+function rand(){let n;do{n=1+Math.floor(Math.random()*5);}while(n===D.n);D.n=n;$("#inCup").value=n;D.p=[0,10,20][Math.floor(Math.random()*3)];$("#inDisc").value=D.p;reset();}
+$("#sNext").onclick=()=>{
+  const s=D.S[D.i];
+  if(s.end){if(!D.recall)recall();return;}
+  const nx=D.S[D.i+1];
+  if(nx.predict&&D.ans[D.i+1]===undefined){
+    showPredict(nx,ok=>{D.ans[D.i+1]=ok;D.i++;render();$("#pred").hidden=false;});return;}
+  $("#pred").hidden=true;D.i++;render();
+};
+$("#sBack").onclick=()=>{if(D.i>0){D.i--;D.recall=false;clearUI();render();}};
+$("#sReset").onclick=reset;
+$("#sRand").onclick=rand;
+$$("#lvl button").forEach(b=>b.onclick=()=>{D.L=+b.dataset.l;reset();});
+$("#inCup").onchange=e=>{D.n=+e.target.value;reset();};
+$("#inDisc").onchange=e=>{D.p=+e.target.value;reset();};
+
+/* ===== launch ===== */
+const cv=$("#launchCv"),msg=$("#launchMsg");let raf=null,busy=false,launched=false;
+const msgIdle=()=>tr("<b>Cabaran Simulator Pembelajaran Interaktif 2026</b><span>Berbantukan AI Generatif · Bulan Akademia UKM 2026</span>","<b>Interactive Learning Simulator Challenge 2026</b><span>Assisted by Generative AI · UKM Academia Month 2026</span>");
+const msgOpen=()=>tr('<span class="open">Cabaran kini DIBUKA!</span><b>Cabaran Simulator Pembelajaran Interaktif 2026</b><span>Bina 21 Okt 2026 – 3 Jan 2027 · Daftar sebelum 18 Dis 2026 · forms.gle/bTrx4Z8ZNwb7FH3q8</span>','<span class="open">The challenge is now OPEN!</span><b>Interactive Learning Simulator Challenge 2026</b><span>Build 21 Oct 2026 – 3 Jan 2027 · Register by 18 Dec 2026 · forms.gle/bTrx4Z8ZNwb7FH3q8</span>');
+function size(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;const c=cv.getContext("2d");c.setTransform(d,0,0,d,0,0);return{c,w:r.width,h:r.height};}
+function confetti(){const {c,w,h}=size();const cols=["#FFD21F","#F4F7FC","#8AA4FF","#3DDC84","#FF8A65"];const P=Array.from({length:160},()=>({x:w/2,y:h*.55,vx:(Math.random()-.5)*9,vy:-Math.random()*9-3,s:Math.random()*6+4,r:Math.random()*6,col:cols[Math.floor(Math.random()*5)]}));
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;let n=0;
+  const step=()=>{c.clearRect(0,0,w,h);P.forEach(p=>{p.vy+=.18;p.x+=p.vx;p.y+=p.vy;p.r+=.1;c.save();c.translate(p.x,p.y);c.rotate(p.r);c.fillStyle=p.col;c.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);c.restore();});if(++n<(reduce?1:220))raf=requestAnimationFrame(step);};
+  cancelAnimationFrame(raf);step();}
+$("#launchGo").onclick=async()=>{if(busy)return;busy=true;$("#launchGo").disabled=true;
+  for(const k of [3,2,1]){msg.innerHTML=`<span class="count">${k}</span>`;tone([[440+k*60,.15]]);await new Promise(r=>setTimeout(r,1000));}
+  launched=true;msg.innerHTML=msgOpen();
+  tone([[523,.14],[659,.14],[784,.14],[1047,.4]]);confetti();busy=false;};
+$("#launchReset").onclick=()=>{cancelAnimationFrame(raf);const {c,w,h}=size();c.clearRect(0,0,w,h);launched=false;msg.innerHTML=msgIdle();$("#launchGo").disabled=false;};
+
+
+/* ===== neuroscience animation ===== */
+(function(){
+  const bar=$("#memBar"),val=$("#memVal"),syn=$("#syn"),pulse=$("#pulse"),axon=$("#axon"),err=$("#errTag"),nB=document.querySelector("#brain .nB"),say=$("#brainSay");
+  if(!bar)return;
+  let m=20,busy=false;const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const draw=()=>{const v=Math.round(m);bar.style.width=v+"%";val.textContent=v+"%";syn.setAttribute("stroke-width",(2+v/100*14).toFixed(1));};
+  const msgs={reread:["Membaca semula: sambungan bertambah sedikit sahaja.","Rereading: the connection grows only a little."],
+    predict:["Ramalan meleset! Otak memberi isyarat ralat, lalu sambungan dikemas kini dan menjadi lebih kuat.","Prediction missed! The brain signals an error, then the connection updates and grows stronger."],
+    recall:["Mengingat semula tanpa nota: usaha mencari maklumat menguatkan sambungan.","Recalling without notes: the effort of retrieving strengthens the connection."]};
+  const gain={reread:4,predict:16,recall:12};
+  function fire(n,done){const L=axon.getTotalLength();let k=0;
+    const one=()=>{if(k>=n){done();return;}const t0=performance.now(),dur=reduce?1:650;pulse.setAttribute("opacity","1");
+      const step=now=>{const f=Math.min(1,(now-t0)/dur);const pt=axon.getPointAtLength(f*L);pulse.setAttribute("cx",pt.x);pulse.setAttribute("cy",pt.y);
+        if(f<1)requestAnimationFrame(step);else{pulse.setAttribute("opacity","0");nB.classList.add("fire");setTimeout(()=>nB.classList.remove("fire"),220);k++;setTimeout(one,120);}};
+      requestAnimationFrame(step);};one();}
+  $$("#brain [data-act]").forEach(b=>b.onclick=()=>{if(busy)return;busy=true;const a=b.dataset.act;
+    if(a==="predict"){err.textContent=tr("ralat ramalan!","prediction error!");err.setAttribute("opacity","1");setTimeout(()=>err.setAttribute("opacity","0"),1400);}
+    fire(a==="reread"?1:2,()=>{m=Math.min(100,m+gain[a]);draw();say.textContent=tr(msgs[a][0],msgs[a][1]);busy=false;});});
+  setInterval(()=>{if(!busy&&m>10){m=Math.max(10,m-0.5);draw();}},1000);
+  draw();
+})();
+/* ===== apply language ===== */
+function applyLang(lg,first){
+  const prev=LANG;LANG=lg;store.lang=lg;save();
+  document.documentElement.classList.toggle("L-en",lg==="en");
+  document.documentElement.setAttribute("lang",lg==="en"?"en":"ms");
+  $("#lgMs").classList.toggle("on",lg==="ms");$("#lgEn").classList.toggle("on",lg==="en");
+  $("#lgMs").setAttribute("aria-pressed",lg==="ms");$("#lgEn").setAttribute("aria-pressed",lg==="en");
+  if(!first&&prev!==lg){const Dp=prev==="en"?DEF_EN:DEF_MS,Dn=lg==="en"?DEF_EN:DEF_MS;
+    Object.keys(Dn).forEach(k=>{const el=$("#"+k);if(el.value===Dp[k]){el.value=Dn[k];store.f[k]=Dn[k];}});save();}
+  $$("[data-copy]").forEach(b=>b.textContent=CP());
+  ideas();buildPrompts();
+  const i=D.i,rc=D.recall;D.S=build(D.L,D.n,D.p);D.i=Math.min(i,D.S.length-1);
+  if(rc){recall();}else{if(!$("#pred").hidden&&!first){clearUI();}render();}
+  if(!busy)msg.innerHTML=launched?msgOpen():msgIdle();
+}
+$("#lgMs").onclick=()=>applyLang("ms");
+$("#lgEn").onclick=()=>applyLang("en");
+D.S=build(D.L,D.n,D.p);
+applyLang(LANG,true);
+})();
+</script>
+
+</body>
+</html>

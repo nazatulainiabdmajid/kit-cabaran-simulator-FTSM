@@ -311,6 +311,7 @@ html.pres .presbar{display:flex;position:fixed;left:50%;bottom:16px;transform:tr
 .anat{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 @media (max-width:900px){.anat{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:520px){.anat{grid-template-columns:minmax(0,1fr)}}
+.hintline{display:block;background:var(--hi-soft);border-left:4px solid var(--hi);padding:6px 10px;border-radius:6px;font-size:.92rem;color:var(--ink)}
 /* Always light, even when the browser or OS is in dark mode */
 :root{color-scheme:only light}
 html,body{background:var(--bg)}
@@ -1050,7 +1051,7 @@ function ddaStat(){$("#ddaStat").innerHTML=`<span class="pill">DDA</span><span>$
 function showPredict(step,onDone){
   const P=step.predict,box=$("#pred");box.hidden=false;$("#sNext").disabled=true;
   $("#ava").innerHTML=avatar("think");$("#say").innerHTML=tr("Tunggu! Sebelum saya teruskan, cuba <b>ramal</b> dahulu.","Wait! Before I carry on, try to <b>predict</b> first.");speak($("#say").innerHTML+" "+P.q);
-  box.innerHTML=`<b>${tr("Ramal dahulu","Predict first")}: ${P.q}</b>${D.hint?`<span class="small"><b>${tr("Petunjuk","Hint")}:</b> ${P.hint}</span>`:""}<div class="opts">${P.options.map((o,j)=>`<button class="o" data-j="${j}">${esc(o)}</button>`).join("")}</div><span class="small" id="pEx"></span>`;
+  box.innerHTML=`<b>${tr("Ramal dahulu","Predict first")}: ${P.q}</b>${D.hint?`<span class="hintline">&#128161; <b>${tr("Petunjuk","Hint")}:</b> ${P.hint}</span>`:""}<div class="opts">${P.options.map((o,j)=>`<button class="o" data-j="${j}">${esc(o)}</button>`).join("")}</div><span class="small" id="pEx"></span>`;
   box.querySelectorAll("button.o").forEach(b=>b.onclick=()=>{const j=+b.dataset.j,ok=j===P.answer;
     box.querySelectorAll("button.o").forEach(x=>{x.disabled=true;if(+x.dataset.j===P.answer)x.classList.add("right");else if(+x.dataset.j===j)x.classList.add("wrong");});
     if(ok){D.streakC++;D.streakW=0;tone([[523,.1],[784,.18]]);}else{D.streakW++;D.streakC=0;tone([[392,.25]]);}
@@ -1062,8 +1063,8 @@ function showPredict(step,onDone){
 }
 function dda(){const b=$("#ddaBanner");
   if(D.streakC>=2&&D.L<3){b.hidden=false;b.innerHTML=`<span><b>DDA:</b> ${tr("2 ramalan betul berturut-turut. Sedia untuk cabaran lebih tinggi?","2 correct predictions in a row. Ready for a bigger challenge?")}</span><button class="btn sm" id="ddaUp">${tr("Naik ke tahap","Move up to")} ${LV()[D.L+1]}</button>`;$("#ddaUp").onclick=()=>{D.L++;D.streakC=0;b.hidden=true;reset();};}
-  else if(D.streakW>=2&&D.L>1){b.hidden=false;b.innerHTML=`<span><b>DDA:</b> ${tr("2 ramalan meleset. Petunjuk kini dihidupkan.","2 predictions missed. Hints are now on.")}</span><button class="btn sm ghost" id="ddaDown">${tr("Cuba tahap lebih mudah","Try an easier level")}</button>`;$("#ddaDown").onclick=()=>{D.L--;D.streakW=0;b.hidden=true;reset();};}
-  else if(D.streakW>=2){b.hidden=false;b.innerHTML=`<span><b>DDA:</b> ${tr("petunjuk dihidupkan untuk membantu anda.","hints are on to help you.")}</span>`;}
+  else if(D.streakW>=2&&D.L>1){b.hidden=false;b.innerHTML=`<span><b>DDA:</b> ${tr("2 ramalan meleset. Petunjuk kini dihidupkan: anda akan nampak kotak &#128161; Petunjuk dalam soalan Ramal dahulu yang seterusnya.","2 predictions missed. Hints are now on: you'll see a &#128161; Hint box in the next Predict first question.")}</span><button class="btn sm ghost" id="ddaDown">${tr("Cuba tahap lebih mudah","Try an easier level")}</button>`;$("#ddaDown").onclick=()=>{D.L--;D.streakW=0;b.hidden=true;reset();};}
+  else if(D.streakW>=2){b.hidden=false;b.innerHTML=`<span><b>DDA:</b> ${tr("petunjuk dihidupkan untuk membantu anda. Kotak &#128161; Petunjuk akan muncul dalam soalan Ramal dahulu yang seterusnya. Tekan <b>Set semula</b> untuk cuba sekali lagi.","hints are on to help you. A &#128161; Hint box will appear in the next Predict first question. Press <b>Reset</b> to try again.")}</span>`;}
   else b.hidden=true;
   ddaStat();}
 function recall(){

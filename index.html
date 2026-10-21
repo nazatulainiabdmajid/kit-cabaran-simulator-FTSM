@@ -487,7 +487,7 @@ html.L-en [data-t="ms"]{display:none!important}
           <div class="console" id="console"></div>
         </div>
       </div>
-      <div class="storyrow"><div id="ava"></div><div class="bubble" aria-live="polite"><b class="who"><span data-t="ms">Kak Mira, juruwang Kafe Siswa</span><span data-t="en">Kak Mira, cashier at the Student Café</span></b><span id="say"></span></div></div>
+      <div class="storyrow"><div id="ava"></div><div class="bubble" aria-live="polite"><b class="who"><span data-t="ms">Kak Mira, pengurus Kafe Siswa</span><span data-t="en">Kak Mira, manager of the Student Café</span></b><span id="say"></span></div></div>
       <div class="predict" id="pred" hidden></div>
       <div class="banner" id="ddaBanner" hidden></div>
       <div class="btnrow">
@@ -503,11 +503,11 @@ html.L-en [data-t="ms"]{display:none!important}
   <div class="col stack" style="margin-top:28px">
     <h3 data-t="ms">Metafora Kafe</h3><h3 data-t="en">The café metaphor</h3>
     <div class="flow3">
-      <div class="card dark"><span class="k">main</span><b data-t="ms">Juruwang</b><b data-t="en">Cashier</b><span class="small" data-t="ms">Menerima pesanan</span><span class="small" data-t="en">Takes the order</span></div>
+      <div class="card dark"><span class="k">main</span><b data-t="ms">Pengurus</b><b data-t="en">Manager</b><span class="small" data-t="ms">Menerima pesanan dan mengurus</span><span class="small" data-t="en">Takes the order and manages</span></div>
       <span class="arrow" aria-hidden="true">→</span>
-      <div class="card"><span class="k">Parameter</span><b data-t="ms">Salinan resit</b><b data-t="en">A copy of the receipt</b><span class="small muted" data-t="ms">dihantar kepada barista</span><span class="small muted" data-t="en">passed to the barista</span></div>
+      <div class="card"><span class="k">Parameter</span><b data-t="ms">Salinan slip pesanan</b><b data-t="en">A copy of the order slip</b><span class="small muted" data-t="ms">dihantar kepada juruwang</span><span class="small muted" data-t="en">passed to the cashier</span></div>
       <span class="arrow" aria-hidden="true">→</span>
-      <div class="card yel"><span class="k"><span data-t="ms">Fungsi → return value</span><span data-t="en">Function → return value</span></span><b data-t="ms">Barista pulangkan kopi</b><b data-t="en">The barista returns the coffee</b><span class="small" data-t="ms">kepada juruwang</span><span class="small" data-t="en">to the cashier</span></div>
+      <div class="card yel"><span class="k"><span data-t="ms">Fungsi → return value</span><span data-t="en">Function → return value</span></span><b data-t="ms">Juruwang pulangkan jumlah harga</b><b data-t="en">The cashier returns the total price</b><span class="small" data-t="ms">kepada pengurus</span><span class="small" data-t="en">to the manager</span></div>
     </div>
 
     <h3 id="neuro" data-t="ms">Neurosains ringkas dalam demo kita</h3><h3 data-t="en">A little neuroscience in our demo</h3>
@@ -765,8 +765,8 @@ function ideas(){const I=LANG==="en"?IDEAS_EN:IDEAS_MS;const keys=Object.keys(I)
   $("#ideaBody").innerHTML=I[keys[curI]].map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("");}
 
 /* ===== prompts ===== */
-const DEF_MS={tTopik:"Fungsi dalam pengaturcaraan berstruktur: menghantar data melalui parameter dan nilai pulangan (return value)",tTak:"bagaimana nilai dari main disalin ke parameter, disimpan dalam call stack, dan dipulangkan semula kepada pemanggil",tKonteks:"Kafe Siswa: fungsi main ialah juruwang, fungsi lain ialah barista. Juruwang menghantar salinan resit (parameter) kepada barista; apabila siap, barista memulangkan kopi (return value) kepada juruwang"};
-const DEF_EN={tTopik:"Functions in structured programming: passing data through parameters and return values",tTak:"how values from main are copied into parameters, kept on the call stack, and returned to the caller",tKonteks:"Student Café: the main function is the cashier and the other function is the barista. The cashier passes a copy of the receipt (parameter) to the barista; when done, the barista returns the coffee (return value) to the cashier"};
+const DEF_MS={tTopik:"Fungsi dalam pengaturcaraan berstruktur: menghantar data melalui parameter dan nilai pulangan (return value)",tTak:"bagaimana nilai dari main disalin ke parameter, disimpan dalam call stack, dan dipulangkan semula kepada pemanggil",tKonteks:"Kafe Siswa: fungsi main ialah pengurus kafe, fungsi kiraHarga ialah juruwang. Pengurus menghantar salinan slip pesanan (parameter) kepada juruwang; juruwang mengira dan memulangkan jumlah harga (return value) kepada pengurus"};
+const DEF_EN={tTopik:"Functions in structured programming: passing data through parameters and return values",tTak:"how values from main are copied into parameters, kept on the call stack, and returned to the caller",tKonteks:"Student Café: the main function is the café manager and the calcPrice function is the cashier. The manager passes a copy of the order slip (parameter) to the cashier; the cashier calculates and returns the total price (return value) to the manager"};
 const DEF=()=>LANG==="en"?DEF_EN:DEF_MS;
 $$("[data-store]").forEach(el=>{el.value=store.f[el.id]??DEF()[el.id];el.addEventListener("input",()=>{store.f[el.id]=el.value;save();buildPrompts();});});
 $("#tReset").onclick=()=>{Object.keys(DEF_MS).forEach(k=>{$("#"+k).value=DEF()[k];store.f[k]=DEF()[k];});save();buildPrompts();};
@@ -785,7 +785,7 @@ Ideas from past research: if I attach a NotebookLM notebook or paste a research 
 Requirements:
 - Show a short code example (C language) on the left and highlight the line being executed.
 - On the right, show the call stack: each function is a box with its variables and values. Show values being copied into parameters and the return value going back to the caller.
-- Put metaphor labels next to the technical terms (for example "barista (function)").
+- Put metaphor labels next to the technical terms (for example "cashier (function)").
 - "Next step", "Back" and "Reset" buttons, plus one input to change the starting value.
 - All values must be calculated by JavaScript code, not fixed text.
 - Interface language: English (or Malay if your course is taught in Malay).
@@ -804,7 +804,7 @@ Add a "Predict first" mode:
    {t:"Avatar & story",chips:[["neuro","Neuroscience: story & emotion"]],when:"Try now",why:"A hard concept becomes easy when it's linked to everyday situations.",
     p:`Update the same simulator. Do NOT change the calculation logic.
 
-- Add a simple avatar character called Kak Mira, the café cashier (drawn with SVG in the same file), with a speech bubble.
+- Add a simple avatar character called Kak Mira, the café manager (drawn with SVG in the same file), with a speech bubble.
 - At every step, Kak Mira explains what is happening using the metaphor: ${K}.
 - After the story explanation, show the technical term in brackets.`},
    {t:"Repetition",chips:[["neuro","Neuroscience: retrieval practice"]],when:"Explore at home",why:"Recall and try again with different values.",
@@ -831,7 +831,7 @@ Idea daripada kajian lepas: jika saya melampirkan notebook NotebookLM atau menam
 Keperluan:
 - Paparkan contoh kod pendek (bahasa C) di sebelah kiri dan serlahkan baris yang sedang dilaksanakan.
 - Di sebelah kanan, paparkan call stack: setiap fungsi ialah satu kotak dengan pemboleh ubah dan nilainya. Tunjukkan nilai disalin ke parameter dan nilai pulangan kembali kepada pemanggil.
-- Gunakan label metafora di sebelah istilah teknikal (contohnya "barista (fungsi)").
+- Gunakan label metafora di sebelah istilah teknikal (contohnya "juruwang (fungsi)").
 - Butang "Langkah seterusnya", "Undur" dan "Set semula", serta satu input untuk menukar nilai awal.
 - Semua nilai mesti dikira oleh kod JavaScript, bukan teks tetap.
 - Bahasa antara muka: Bahasa Melayu (atau Bahasa Inggeris jika kursus anda dalam Bahasa Inggeris).
@@ -850,7 +850,7 @@ Tambah mod "Ramal dahulu":
    {t:"Avatar & cerita",chips:[["neuro","Neurosains: cerita & emosi"]],when:"Cuba sekarang",why:"Konsep yang sukar menjadi mudah apabila dikaitkan dengan situasi harian.",
     p:`Kemas kini simulator yang sama. JANGAN ubah logik pengiraan.
 
-- Tambah satu watak avatar ringkas bernama Kak Mira, juruwang kafe (dilukis dengan SVG dalam fail yang sama), dengan belon dialog.
+- Tambah satu watak avatar ringkas bernama Kak Mira, pengurus kafe (dilukis dengan SVG dalam fail yang sama), dengan belon dialog.
 - Pada setiap langkah, Kak Mira menerangkan apa yang berlaku menggunakan metafora: ${K}.
 - Selepas penerangan cerita, tunjukkan istilah teknikal dalam kurungan.`},
    {t:"Ulangan",chips:[["neuro","Neurosains: mengingat semula"]],when:"Terokai di rumah",why:"Imbas kembali dan cuba dengan nilai lain.",
@@ -977,33 +977,33 @@ function build(L,n,p){
   const c=nm, cp=tr("salinan","copy");
   if(L===1){
     const t=n*PRICE;
-    S.push({line:6,frames:[F("main",{cawan:"?",harga:"?"})],con:"",say:tr("Kaunter dibuka. Saya juruwang, iaitu fungsi <b>main</b>. Saya sediakan kotak untuk pemboleh ubah saya.","The counter is open. I'm the cashier, the <b>main</b> function. I set up boxes for my variables.")});
+    S.push({line:6,frames:[F("main",{cawan:"?",harga:"?"})],con:"",say:tr("Kafe dibuka. Saya pengurus, iaitu fungsi <b>main</b>. Saya sediakan kotak untuk pemboleh ubah saya.","The café is open. I'm the manager, the <b>main</b> function. I set up boxes for my variables.")});
     S.push({line:7,frames:[F("main",{cawan:n,harga:"?"})],con:"",say:tr(`Pelanggan memesan ${n} cawan kopi. Nilai ${n} disimpan dalam <b>cawan</b>.`,`A customer orders ${n} cups of coffee. The value ${n} is stored in <b>${c("cawan")}</b>.`)});
-    S.push({line:8,frames:[F("main",{cawan:n,harga:"?"}),F("kiraHarga",{kuantiti:[n],hargaSeunit:[f2(PRICE)]})],con:"",say:tr(`Saya hantar <b>salinan resit</b> kepada barista <b>kiraHarga</b>: nilai ${n} dan 4.50 disalin ke parameter. Resit asal (cawan) kekal pada saya. Satu kotak baharu masuk ke call stack.`,`I pass a <b>copy of the receipt</b> to the barista <b>${c("kiraHarga")}</b>: the values ${n} and 4.50 are copied into the parameters. The original receipt (${c("cawan")}) stays with me. A new box goes onto the call stack.`),mood:"think"});
-    S.push({line:2,frames:[F("main",{cawan:n,harga:"?"}),F("kiraHarga",{kuantiti:n,hargaSeunit:f2(PRICE),jumlah:f2(t)})],con:"",say:tr(`Barista mengira ${n} × 4.50 = ${f2(t)} dan menyimpannya dalam <b>jumlah</b>, pemboleh ubah miliknya sendiri.`,`The barista calculates ${n} × 4.50 = ${f2(t)} and stores it in <b>${c("jumlah")}</b>, a variable of its own.`)});
+    S.push({line:8,frames:[F("main",{cawan:n,harga:"?"}),F("kiraHarga",{kuantiti:[n],hargaSeunit:[f2(PRICE)]})],con:"",say:tr(`Saya minta juruwang <b>kiraHarga</b> kirakan bayaran, dan saya hantar <b>salinan slip pesanan</b>: nilai ${n} dan 4.50 disalin ke parameter. Slip asal (cawan) kekal pada saya. Satu kotak baharu masuk ke call stack.`,`I ask the cashier <b>${c("kiraHarga")}</b> to work out the bill, and pass a <b>copy of the order slip</b>: the values ${n} and 4.50 are copied into the parameters. The original slip (${c("cawan")}) stays with me. A new box goes onto the call stack.`),mood:"think"});
+    S.push({line:2,frames:[F("main",{cawan:n,harga:"?"}),F("kiraHarga",{kuantiti:n,hargaSeunit:f2(PRICE),jumlah:f2(t)})],con:"",say:tr(`Juruwang mengira ${n} × 4.50 = ${f2(t)} dan menyimpannya dalam <b>jumlah</b>, pemboleh ubah miliknya sendiri.`,`The cashier calculates ${n} × 4.50 = ${f2(t)} and stores it in <b>${c("jumlah")}</b>, a variable of its own.`)});
     const o=opts(f2(t),[f2(PRICE),String(n),tr("Tiada, jumlah hilang","Nothing, total is lost")]);
-    S.push({line:3,frames:[F("main",{cawan:n,harga:f2(t)})],con:"",say:tr(`Barista memulangkan "kopi": <b>return</b> menghantar ${f2(t)} kembali kepada saya. Kotak kiraHarga dibuang; jumlah hilang, tetapi nilainya selamat dalam <b>harga</b>.`,`The barista returns the "coffee": <b>return</b> sends ${f2(t)} back to me. The ${c("kiraHarga")} box is removed; ${c("jumlah")} is gone, but its value is safe in <b>${c("harga")}</b>.`),
+    S.push({line:3,frames:[F("main",{cawan:n,harga:f2(t)})],con:"",say:tr(`Juruwang memulangkan jumlah harga: <b>return</b> menghantar ${f2(t)} kembali kepada saya. Kotak kiraHarga dibuang; jumlah hilang, tetapi nilainya selamat dalam <b>harga</b>.`,`The cashier returns the total price: <b>return</b> sends ${f2(t)} back to me. The ${c("kiraHarga")} box is removed; ${c("jumlah")} is gone, but its value is safe in <b>${c("harga")}</b>.`),
       predict:{q:tr("Nilai apakah yang akan disimpan dalam harga di main?",`What value will be stored in ${c("harga")} in main?`),...o,hint:tr("Lihat nilai jumlah dalam kotak kiraHarga.",`Look at the value of ${c("jumlah")} in the ${c("kiraHarga")} box.`),ex:tr("return menyalin nilai jumlah kembali kepada pemanggil, kemudian kotak fungsi dibuang.",`return copies the value of ${c("jumlah")} back to the caller, then the function's box is removed.`)}});
     S.push({line:9,frames:[F("main",{cawan:n,harga:f2(t)})],con:`${c("Harga")}: ${RM(t)}`,say:tr("printf memaparkan harga kepada pelanggan.","printf shows the price to the customer.")});
     S.push({line:10,frames:[],con:`${c("Harga")}: ${RM(t)}`,say:tr("Program tamat. Semua kotak dibuang dari timbunan.","The program ends. All boxes are removed from the stack."),end:true,mood:"win"});
   } else if(L===2){
     const t=n*PRICE, b=t-(t*p/100);
-    S.push({line:11,frames:[F("main",{cawan:"?",harga:"?",bayar:"?"})],con:"",say:tr("Kaunter dibuka. Saya, juruwang (<b>main</b>), sediakan tiga kotak pemboleh ubah.","The counter is open. I, the cashier (<b>main</b>), set up three variable boxes.")});
+    S.push({line:11,frames:[F("main",{cawan:"?",harga:"?",bayar:"?"})],con:"",say:tr("Kafe dibuka. Saya, pengurus (<b>main</b>), sediakan tiga kotak pemboleh ubah.","The café is open. I, the manager (<b>main</b>), set up three variable boxes.")});
     S.push({line:12,frames:[F("main",{cawan:n,harga:"?",bayar:"?"})],con:"",say:tr(`Pesanan: ${n} cawan.`,`Order: ${n} cups.`)});
-    S.push({line:13,frames:[F("main",{cawan:n,harga:"?",bayar:"?"}),F("kiraHarga",{kuantiti:[n],hargaSeunit:[f2(PRICE)]})],con:"",say:tr("Barista pertama, <b>kiraHarga</b>, menerima salinan resit.",`The first barista, <b>${c("kiraHarga")}</b>, receives a copy of the receipt.`),mood:"think"});
+    S.push({line:13,frames:[F("main",{cawan:n,harga:"?",bayar:"?"}),F("kiraHarga",{kuantiti:[n],hargaSeunit:[f2(PRICE)]})],con:"",say:tr("Juruwang, <b>kiraHarga</b>, menerima salinan slip pesanan.",`The cashier, <b>${c("kiraHarga")}</b>, receives a copy of the order slip.`),mood:"think"});
     S.push({line:2,frames:[F("main",{cawan:n,harga:"?",bayar:"?"}),F("kiraHarga",{kuantiti:n,hargaSeunit:f2(PRICE),jumlah:f2(t)})],con:"",say:`${n} × 4.50 = ${f2(t)}.`});
     const o1=opts(f2(t),[f2(PRICE),String(n),f2(b)]);
     S.push({line:3,frames:[F("main",{cawan:n,harga:f2(t),bayar:"?"})],con:"",say:tr(`${f2(t)} dipulangkan dan disimpan dalam <b>harga</b>.`,`${f2(t)} is returned and stored in <b>${c("harga")}</b>.`),predict:{q:tr("Apakah nilai harga selepas kiraHarga memulangkan nilainya?",`What is the value of ${c("harga")} after ${c("kiraHarga")} returns?`),...o1,hint:tr("Fungsi memulangkan nilai jumlah.",`The function returns the value of ${c("jumlah")}.`),ex:tr("Nilai pulangan kiraHarga ialah jumlah = kuantiti × hargaSeunit.",`The return value of ${c("kiraHarga")} is ${c("jumlah")} = ${c("kuantiti")} × ${c("hargaSeunit")}.`)}});
-    S.push({line:14,frames:[F("main",{cawan:n,harga:f2(t),bayar:"?"}),F("tolakDiskaun",{jumlah:[f2(t)],peratus:[p]})],con:"",say:tr(`Barista kedua, <b>tolakDiskaun</b>, menerima salinan harga (${f2(t)}) dan diskaun ${p}%. Parameternya bernama <b>jumlah</b>, tetapi ini kotak baharu, bukan jumlah dalam kiraHarga.`,`The second barista, <b>${c("tolakDiskaun")}</b>, receives a copy of the price (${f2(t)}) and a ${p}% discount. Its parameter is called <b>${c("jumlah")}</b>, but this is a new box, not the ${c("jumlah")} in ${c("kiraHarga")}.`),mood:"think"});
+    S.push({line:14,frames:[F("main",{cawan:n,harga:f2(t),bayar:"?"}),F("tolakDiskaun",{jumlah:[f2(t)],peratus:[p]})],con:"",say:tr(`Penyelia, <b>tolakDiskaun</b>, menerima salinan harga (${f2(t)}) dan diskaun ${p}%. Parameternya bernama <b>jumlah</b>, tetapi ini kotak baharu, bukan jumlah dalam kiraHarga.`,`The supervisor, <b>${c("tolakDiskaun")}</b>, receives a copy of the price (${f2(t)}) and a ${p}% discount. Its parameter is called <b>${c("jumlah")}</b>, but this is a new box, not the ${c("jumlah")} in ${c("kiraHarga")}.`),mood:"think"});
     S.push({line:7,frames:[F("main",{cawan:n,harga:f2(t),bayar:"?"}),F("tolakDiskaun",{jumlah:f2(t),peratus:p,baki:f2(b)})],con:"",say:`${f2(t)} − (${f2(t)} × ${p} / 100) = ${f2(b)}.`});
     const o2=opts(f2(b),[f2(t),f2(t*p/100),"0.00"]);
     S.push({line:8,frames:[F("main",{cawan:n,harga:f2(t),bayar:f2(b)})],con:"",say:tr(`${f2(b)} dipulangkan dan disimpan dalam <b>bayar</b>.`,`${f2(b)} is returned and stored in <b>${c("bayar")}</b>.`),predict:{q:tr("Apakah nilai bayar selepas tolakDiskaun selesai?",`What is the value of ${c("bayar")} after ${c("tolakDiskaun")} finishes?`),...o2,hint:tr("baki = jumlah tolak diskaun.",`${c("baki")} = ${c("jumlah")} minus the discount.`),ex:tr("tolakDiskaun memulangkan baki, iaitu harga selepas diskaun, bukan nilai diskaun itu sendiri.",`${c("tolakDiskaun")} returns ${c("baki")}, the price after the discount, not the discount amount itself.`)}});
     S.push({line:15,frames:[F("main",{cawan:n,harga:f2(t),bayar:f2(b)})],con:`${c("Bayaran")}: ${RM(b)}`,say:tr("printf memaparkan bayaran.","printf shows the payment.")});
-    S.push({line:16,frames:[],con:`${c("Bayaran")}: ${RM(b)}`,say:tr("Program tamat. Dua barista, dua kotak, dua nilai pulangan.","The program ends. Two baristas, two boxes, two return values."),end:true,mood:"win"});
+    S.push({line:16,frames:[],con:`${c("Bayaran")}: ${RM(b)}`,say:tr("Program tamat. Dua pekerja, dua kotak, dua nilai pulangan.","The program ends. Two staff, two boxes, two return values."),end:true,mood:"win"});
   } else {
     S.push({line:6,frames:[F("main",{cawan:"?",baru:"?"})],con:"",say:tr("Tahap mencabar: perhatikan nama yang sama di dua tempat.","Challenging level: watch for the same name in two places."),mood:"think"});
     S.push({line:7,frames:[F("main",{cawan:n,baru:"?"})],con:"",say:`${c("cawan")} = ${n}.`});
-    S.push({line:8,frames:[F("main",{cawan:n,baru:"?"}),F("tambahCawan",{cawan:[n]})],con:"",say:tr("Kedua-dua kotak ada pemboleh ubah bernama <b>cawan</b>, tetapi ia <b>dua kotak berbeza</b>. Barista tambahCawan hanya menerima salinan resit.",`Both boxes have a variable called <b>${c("cawan")}</b>, but they are <b>two different boxes</b>. The barista ${c("tambahCawan")} only receives a copy of the receipt.`),mood:"think"});
+    S.push({line:8,frames:[F("main",{cawan:n,baru:"?"}),F("tambahCawan",{cawan:[n]})],con:"",say:tr("Kedua-dua kotak ada pemboleh ubah bernama <b>cawan</b>, tetapi ia <b>dua kotak berbeza</b>. Pembantu tambahCawan hanya menerima salinan slip pesanan.",`Both boxes have a variable called <b>${c("cawan")}</b>, but they are <b>two different boxes</b>. The assistant ${c("tambahCawan")} only receives a copy of the order slip.`),mood:"think"});
     S.push({line:2,frames:[F("main",{cawan:n,baru:"?"}),F("tambahCawan",{cawan:n+1})],con:"",say:tr(`cawan dalam tambahCawan menjadi ${n+1}. Lihat kotak main: cawan masih ${n}.`,`${c("cawan")} inside ${c("tambahCawan")} becomes ${n+1}. Look at the main box: ${c("cawan")} is still ${n}.`)});
     S.push({line:3,frames:[F("main",{cawan:n,baru:"?"})],con:"",say:tr(`Nilai ${n+1} dipulangkan, tetapi main tidak menyimpannya di mana-mana. Nilai itu hilang.`,`The value ${n+1} is returned, but main doesn't store it anywhere. The value is lost.`)});
     const o1=opts(`${c("Cawan")}: ${n}`,[`${c("Cawan")}: ${n+1}`,tr("Ralat kompilasi","Compile error"),`${c("Cawan")}: 0`]);

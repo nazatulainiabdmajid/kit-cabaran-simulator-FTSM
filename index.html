@@ -270,6 +270,47 @@ html.pres .presbar{display:flex;position:fixed;left:50%;bottom:16px;transform:tr
 #ava.talk svg{animation:talk .32s ease-in-out infinite alternate}
 @keyframes talk{from{transform:translateY(0)}to{transform:translateY(-3px)}}
 @media (max-width:640px){.pres-only-wide{display:none}}
+
+/* input -> process -> output explainer */
+.ipo{display:grid;grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr) 44px minmax(0,1fr);gap:8px;align-items:stretch}
+.ipo-box{border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ipo-box b{font-family:var(--f-display);color:inherit}
+.ipo-box.in{background:var(--surface);border:2px solid var(--accent);color:var(--ink)}
+.ipo-box.pr{background:var(--navy);color:var(--navy-ink);align-items:flex-start}
+.ipo-box.out{background:var(--hi);color:var(--hi-ink)}
+.ipo-k{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.1em;font-weight:700;opacity:.85}
+.ipo-ctl{display:flex;justify-content:space-between;gap:8px;font-size:.9rem}
+.ipo-ctl output{font-family:var(--f-display);font-weight:800;font-size:1.3rem;color:var(--accent)}
+.ipo input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
+.ipo-gear{font-size:2rem;line-height:1;color:var(--hi);display:inline-block}
+.ipo-gear.spin{animation:ipospin .7s ease-in-out}
+@keyframes ipospin{to{transform:rotate(360deg)}}
+.ipo-box.pr code{font-family:var(--f-mono);background:rgba(255,255,255,.12);padding:4px 8px;border-radius:6px;color:var(--navy-ink);font-size:.95rem;white-space:nowrap}
+.ipo-cups{display:flex;flex-wrap:wrap;gap:2px;font-size:1.5rem;line-height:1.2;min-height:1.9rem}
+.ipo-cups span{display:inline-block;animation:ipopop .35s ease-out both}
+@keyframes ipopop{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+.ipo-price{font-family:var(--f-display);font-weight:800;font-size:1.9rem;line-height:1}
+.ipo-price.bump{animation:ipobump .45s ease-out}
+@keyframes ipobump{40%{transform:scale(1.18)}}
+.ipo-arrow{display:flex;align-items:center;justify-content:center;position:relative}
+.ipo-arrow::before{content:"";position:absolute;left:4px;right:10px;height:4px;border-radius:4px;background:var(--line)}
+.ipo-arrow::after{content:"";position:absolute;right:2px;border:8px solid transparent;border-left:10px solid var(--accent);transform:translateX(6px)}
+.ipo-arrow i{position:absolute;left:4px;width:12px;height:12px;border-radius:50%;background:var(--hi);border:2px solid var(--navy);opacity:0}
+.ipo.flow .ipo-arrow i{animation:ipodot .55s ease-in forwards}
+.ipo.flow .ipo-arrow:nth-of-type(4) i{animation-delay:.35s}
+@keyframes ipodot{0%{opacity:1;left:4px}100%{opacity:0;left:calc(100% - 14px)}}
+@media (max-width:760px){
+  .ipo{grid-template-columns:minmax(0,1fr)}
+  .ipo-arrow{height:34px}
+  .ipo-arrow::before{left:auto;right:auto;width:4px;height:auto;top:2px;bottom:10px}
+  .ipo-arrow::after{right:auto;bottom:-6px;border:8px solid transparent;border-top:10px solid var(--accent);transform:none}
+  .ipo-arrow i{left:auto;top:2px}
+  .ipo.flow .ipo-arrow i{animation-name:ipodotv}
+  @keyframes ipodotv{0%{opacity:1;top:2px}100%{opacity:0;top:calc(100% - 14px)}}
+}
+.anat{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:900px){.anat{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.anat{grid-template-columns:minmax(0,1fr)}}
 /* Always light, even when the browser or OS is in dark mode */
 :root{color-scheme:only light}
 html,body{background:var(--bg)}
@@ -356,6 +397,32 @@ html.L-en [data-t="ms"]{display:none!important}
   <div class="col">
     <div class="head"><span class="eyebrow"><span data-t="ms">Langkah 1</span><span data-t="en">Step 1</span></span><h2 data-t="ms">Pilih konsep<span class="en">Contoh hari ini: Pengaturcaraan → Fungsi (pelajar tahun satu)</span></h2><h2 data-t="en">Choose a concept<span class="en">Today's example: Programming → Functions (first-year students)</span></h2></div>
     <div class="stack">
+      <h3 data-t="ms">Apa itu simulator?</h3><h3 data-t="en">What is a simulator?</h3>
+      <p data-t="ms">Anda <b>mengubah</b> sesuatu, sistem <b>mengira</b> mengikut peraturan, dan skrin <b>berubah serta-merta</b>. Cuba gerakkan peluncur di bawah.</p>
+      <p data-t="en">You <b>change</b> something, the system <b>calculates</b> by a rule, and the screen <b>changes instantly</b>. Try moving the slider below.</p>
+      <div class="ipo" id="ipo">
+        <div class="ipo-box in">
+          <span class="ipo-k">1 · INPUT</span>
+          <b data-t="ms">Apa yang anda ubah</b><b data-t="en">What you change</b>
+          <label class="ipo-ctl" for="ipoN"><span data-t="ms">Bilangan cawan</span><span data-t="en">Number of cups</span> <output id="ipoNv">3</output></label>
+          <input type="range" id="ipoN" min="1" max="6" value="3">
+        </div>
+        <div class="ipo-arrow" aria-hidden="true"><i></i></div>
+        <div class="ipo-box pr">
+          <span class="ipo-k">2 · <span data-t="ms">PROSES</span><span data-t="en">PROCESS</span></span>
+          <b data-t="ms">Peraturan yang tepat</b><b data-t="en">An exact rule</b>
+          <span class="ipo-gear" id="ipoGear" aria-hidden="true">&#9881;</span>
+          <code id="ipoF">harga = 3 &times; 4.50</code>
+        </div>
+        <div class="ipo-arrow" aria-hidden="true"><i></i></div>
+        <div class="ipo-box out">
+          <span class="ipo-k">3 · OUTPUT</span>
+          <b data-t="ms">Apa yang berubah</b><b data-t="en">What changes</b>
+          <div class="ipo-cups" id="ipoCups" aria-hidden="true"></div>
+          <span class="ipo-price" id="ipoP">RM13.50</span>
+        </div>
+      </div>
+      <div class="note"><b class="k"><span data-t="ms">Video atau simulator?</span><span data-t="en">Video or simulator?</span></b><span data-t="ms">Jika pengguna hanya <b>menonton</b>, itu video. Jika pengguna boleh <b>mengubah</b> dan melihat kesannya, itu simulator. Contoh penuh: Demo Kafe Siswa di Langkah 3.</span><span data-t="en">If users only <b>watch</b>, it's a video. If users can <b>change</b> things and see the effect, it's a simulator. Full example: the Student Café demo in Step 3.</span></div>
       <p data-t="ms">Pilih satu bidang, kemudian satu konsep yang sukar difahami.</p>
       <p data-t="en">Pick a field, then one concept that students find hard to grasp.</p>
       <div class="tabs" id="ideaTabs" role="tablist"></div>
@@ -378,7 +445,7 @@ html.L-en [data-t="ms"]{display:none!important}
       </div>
 
       <div class="mark try"><span class="tag"><span data-t="ms">Cuba</span><span data-t="en">Try</span></span><div class="stack" style="gap:8px;flex:1;min-width:0"><span data-t="ms">Salin soalan carian ini, tampal di <b>Scopus AI</b>. Tukar topik kepada topik anda.</span><span data-t="en">Copy this search question and paste it into <b>Scopus AI</b>. Swap in your own topic.</span>
-        <div class="copy"><span class="lbl"><span data-t="ms">Soalan carian</span><span data-t="en">Search question</span></span><pre id="qSearch">How do interactive web-based simulators improve the comprehension of difficult programming concepts, such as functions and parameter passing, for first-year university students?</pre><button class="btn sm" data-copy="qSearch">Salin</button></div></div></div>
+        <div class="copy"><span class="lbl"><span data-t="ms">Soalan carian</span><span data-t="en">Search question</span></span><pre id="qSearch">What interactive visual, simulation-based or gamified web tools have been evaluated for helping university students learn difficult programming concepts, and which interactive features made them effective?</pre><button class="btn sm" data-copy="qSearch">Salin</button></div></div></div>
 
       <div class="mark try"><span class="tag"><span data-t="ms">Cuba</span><span data-t="en">Try</span></span><div class="stack" style="gap:8px;flex:1;min-width:0"><span data-t="ms">Muat naik artikel ke <b>NotebookLM</b>, kemudian salin prompt ini.</span><span data-t="en">Upload the paper to <b>NotebookLM</b>, then copy this prompt.</span>
         <div class="copy"><span class="lbl"><span data-t="ms">Prompt ekstrak (NotebookLM)</span><span data-t="en">Extraction prompt (NotebookLM)</span></span><pre id="pExtract"></pre><button class="btn sm" data-copy="pExtract">Salin</button></div></div></div>
@@ -489,6 +556,16 @@ html.L-en [data-t="ms"]{display:none!important}
       </div>
       <div class="btnrow" style="margin-top:10px"><button class="btn sm ghost" id="tReset"><span data-t="ms">Guna contoh Kafe Siswa semula</span><span data-t="en">Use the Student Café example again</span></button></div>
     </details>
+    <h3 data-t="ms">Anatomi Prompt 1: 5 komponen</h3><h3 data-t="en">Anatomy of Prompt 1: 5 parts</h3>
+    <div class="anat">
+      <div class="card dark"><span class="k">1 · <span data-t="ms">Tugas</span><span data-t="en">Task</span></span><span class="small" data-t="ms">Apa yang AI hasilkan dan untuk siapa: <i>satu fail HTML, simulator untuk pelajar tahun satu</i>.</span><span class="small" data-t="en">What the AI produces and for whom: <i>one HTML file, a simulator for first-year students</i>.</span></div>
+      <div class="card yel"><span class="k">2 · <span data-t="ms">Konteks</span><span data-t="en">Context</span></span><span class="small" data-t="ms">Topik, apa yang tidak kelihatan, metafora. <b>Tukar bahagian ini untuk topik anda.</b></span><span class="small" data-t="en">Topic, what is invisible, metaphor. <b>Change this part for your topic.</b></span></div>
+      <div class="card"><span class="k">3 · <span data-t="ms">Keperluan</span><span data-t="en">Requirements</span></span><span class="small muted" data-t="ms">Apa yang mesti ada pada skrin: kod di kiri, call stack di kanan, label metafora, butang.</span><span class="small muted" data-t="en">What must appear on screen: code on the left, call stack on the right, metaphor labels, buttons.</span></div>
+      <div class="card"><span class="k">4 · <span data-t="ms">Kekangan</span><span data-t="en">Constraints</span></span><span class="small muted" data-t="ms">Tanpa pustaka luar, nilai dikira oleh JavaScript, bahasa, responsif. Supaya tepat dan mudah dikongsi.</span><span class="small muted" data-t="en">No external libraries, values calculated by JavaScript, language, responsive. So it's accurate and easy to share.</span></div>
+      <div class="card"><span class="k">5 · <span data-t="ms">Kajian</span><span data-t="en">Research</span></span><span class="small muted" data-t="ms">Ringkasan daripada NotebookLM. Jambatan Fokus 1 ke Fokus 2.</span><span class="small muted" data-t="en">The NotebookLM summary. The bridge from Focus 1 to Focus 2.</span></div>
+    </div>
+    <p class="small muted" data-t="ms">Prompt 2 hingga 5 lebih pendek: setiap satu hanya menambah <b>satu</b> keperluan baharu dan berpesan "JANGAN ubah logik pengiraan".</p><p class="small muted" data-t="en">Prompts 2 to 5 are shorter: each adds just <b>one</b> new requirement and says "Do NOT change the calculation logic".</p>
+    <div class="note"><b class="k"><span data-t="ms">Jambatan Fokus 1 → Fokus 2</span><span data-t="en">Bridge: Focus 1 → Focus 2</span></b><span data-t="ms"><b>Scopus AI</b> (cari artikel) → <b>NotebookLM</b> (ekstrak elemen interaktif) → <b>Gemini Canvas</b> (bina simulator). Bawa dapatan kajian anda ke dalam Prompt 1: <b>A. (semua alat AI)</b> Salin "ringkasan reka bentuk 5 baris" daripada NotebookLM dan tampal di <b>hujung Prompt 1</b>, di bawah baris <code>Ringkasan kajian</code> yang sudah tersedia. <b>B. (pengguna Gemini)</b> Klik <b>+ → More uploads → Notebooks</b> dan pilih notebook anda, kemudian tampal Prompt 1. Catat elemen yang diambil dalam README.</span><span data-t="en"><b>Scopus AI</b> (find articles) → <b>NotebookLM</b> (extract interactive elements) → <b>Gemini Canvas</b> (build the simulator). Bring your research findings into Prompt 1: <b>A. (any AI tool)</b> Copy the "5-line design summary" from NotebookLM and paste it at the <b>end of Prompt 1</b>, under the <code>Research summary</code> line that is already there. <b>B. (Gemini users)</b> Click <b>+ → More uploads → Notebooks</b> and choose your notebook, then paste Prompt 1. Note the element you used in your README.</span></div>
     <div class="ladder" id="ladder"></div>
   </div>
 </section>
@@ -649,6 +726,8 @@ $$("section.step").forEach(s=>io.observe(s));
 document.addEventListener("click",e=>{const b=e.target.closest("[data-copy]");if(!b)return;const el=document.getElementById(b.dataset.copy);const t=el.textContent;
   const ok=()=>{b.textContent=tr("Disalin ✓","Copied ✓");setTimeout(()=>b.textContent=CP(),1500);};
   const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent=tr("Dipilih: tekan Ctrl+C","Selected: press Ctrl+C");};
+  const legacy=()=>{try{const ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.top="-1000px";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,t.length);const done=document.execCommand("copy");ta.remove();return done;}catch(err){return false;}};
+  if(legacy()){ok();return;}
   try{navigator.clipboard.writeText(t).then(ok,sel);}catch(err){sel();}});
 
 /* ===== idea bank ===== */
@@ -700,6 +779,7 @@ function buildPrompts(){
 Topic: ${T}
 What is usually invisible: ${N}
 Metaphor: ${K}
+Ideas from past research: if I attach a NotebookLM notebook or paste a research summary below, use at least one interactive element from that research and state which element you used.
 
 Requirements:
 - Show a short code example (C language) on the left and highlight the line being executed.
@@ -708,7 +788,10 @@ Requirements:
 - "Next step", "Back" and "Reset" buttons, plus one input to change the starting value.
 - All values must be calculated by JavaScript code, not fixed text.
 - Interface language: English (or Malay if your course is taught in Malay).
-- Responsive on phones.`},
+- Responsive on phones.
+
+Research summary (paste the NotebookLM summary here, or delete this line if you have none):
+`},
    {t:"Predict first",chips:[["neuro","Neuroscience: prediction error"]],when:"Try now",why:"Our brains remember better when we make a mistake.",
     p:`Update the same simulator. Do NOT change the calculation logic.
 
@@ -742,6 +825,7 @@ Add a "Predict first" mode:
 Topik: ${T}
 Apa yang biasanya tidak kelihatan: ${N}
 Metafora: ${K}
+Idea daripada kajian lepas: jika saya melampirkan notebook NotebookLM atau menampal ringkasan kajian di bawah, gunakan sekurang-kurangnya satu elemen interaktif daripada kajian itu dan nyatakan elemen yang diambil.
 
 Keperluan:
 - Paparkan contoh kod pendek (bahasa C) di sebelah kiri dan serlahkan baris yang sedang dilaksanakan.
@@ -750,7 +834,10 @@ Keperluan:
 - Butang "Langkah seterusnya", "Undur" dan "Set semula", serta satu input untuk menukar nilai awal.
 - Semua nilai mesti dikira oleh kod JavaScript, bukan teks tetap.
 - Bahasa antara muka: Bahasa Melayu (atau Bahasa Inggeris jika kursus anda dalam Bahasa Inggeris).
-- Responsif untuk telefon.`},
+- Responsif untuk telefon.
+
+Ringkasan kajian (tampal ringkasan NotebookLM di sini, atau padam baris ini jika tiada):
+`},
    {t:"Ramal dahulu",chips:[["neuro","Neurosains: ralat ramalan"]],when:"Cuba sekarang",why:"Otak kita lebih mengingati sesuatu apabila kita melakukan kesilapan.",
     p:`Kemas kini simulator yang sama. JANGAN ubah logik pengiraan.
 
@@ -788,14 +875,16 @@ Tambah mod "Ramal dahulu":
 3. Elemen interaktif yang digunakan (contohnya cerita/avatar, maklum balas pantas, permainan, visualisasi)
 4. Bagaimana kajian itu menilai keberkesanannya
 5. Dapatan utama
-Kemudian cadangkan 3 elemen interaktif yang boleh saya guna untuk simulator topik "${T}".`,
+Kemudian cadangkan 3 elemen interaktif yang boleh saya guna untuk simulator topik "${T}".
+Akhir sekali, tulis ringkasan reka bentuk dalam 5 baris yang boleh saya tampal terus ke dalam prompt pembinaan simulator.`,
 `Based on the uploaded paper, list the following in a table (in English), with page numbers for each item:
 1. The learning problem addressed
 2. The concept or topic taught
 3. The interactive elements used (for example story/avatar, instant feedback, games, visualisation)
 4. How the study evaluated its effectiveness
 5. Key findings
-Then suggest 3 interactive elements I could use in a simulator on the topic "${T}".`);
+Then suggest 3 interactive elements I could use in a simulator on the topic "${T}".
+Finally, write a 5-line design summary that I can paste straight into a simulator-building prompt.`);
   $("#pCheck").textContent=tr(`Bertindak sebagai Auditor dan Pensyarah Pakar dalam topik "${T}". Semak simulator dalam perbualan ini. JANGAN tulis semula kod.
 1. Bina jadual jejak (trace table) untuk satu input contoh dan bandingkan dengan apa yang simulator paparkan.
 2. Senaraikan kesilapan konsep, istilah atau pengiraan, dengan sebab.
@@ -1090,6 +1179,20 @@ document.addEventListener("keydown",e=>{
   else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();$("#pPrev").click();}
   else if(e.key==="Escape"){presOn(false);}
 });
+
+/* ===== input -> process -> output explainer ===== */
+function ipoDraw(anim){
+  const n=+$("#ipoN").value, t=n*PRICE;
+  $("#ipoNv").textContent=n;
+  $("#ipoF").innerHTML=`${tr("harga","price")} = ${n} &times; 4.50`;
+  $("#ipoCups").innerHTML=Array.from({length:n},(_,k)=>`<span style="animation-delay:${anim?(k*60+500):0}ms">&#9749;</span>`).join("");
+  $("#ipoP").textContent=RM(t);
+  if(anim){const g=$("#ipoGear"),p=$("#ipoP"),box=$("#ipo");
+    [g,p].forEach(x=>{x.classList.remove("spin","bump");void x.offsetWidth;});
+    g.classList.add("spin");setTimeout(()=>p.classList.add("bump"),450);
+    box.classList.remove("flow");void box.offsetWidth;box.classList.add("flow");tone([[660,.05],[880,.06]]);}
+}
+$("#ipoN").addEventListener("input",()=>ipoDraw(true));
 /* ===== apply language ===== */
 function applyLang(lg,first){
   const prev=LANG;LANG=lg;store.lang=lg;save();
@@ -1100,7 +1203,7 @@ function applyLang(lg,first){
   if(!first&&prev!==lg){const Dp=prev==="en"?DEF_EN:DEF_MS,Dn=lg==="en"?DEF_EN:DEF_MS;
     Object.keys(Dn).forEach(k=>{const el=$("#"+k);if(el.value===Dp[k]){el.value=Dn[k];store.f[k]=Dn[k];}});save();}
   $$("[data-copy]").forEach(b=>b.textContent=CP());
-  ideas();buildPrompts();
+  ideas();buildPrompts();ipoDraw(false);
   const i=D.i,rc=D.recall;D.S=build(D.L,D.n,D.p);D.i=Math.min(i,D.S.length-1);
   if(rc){recall();}else{if(!$("#pred").hidden&&!first){clearUI();}render();}
   if(!busy)msg.innerHTML=launched?msgOpen():msgIdle();
